@@ -12,16 +12,45 @@ init_cond: initial conditions
 class drone():
     g = 9.81 # Gravity constant
     def __init__(self, sys_const, init_cond):
+        # Notation used from Paul D Moller Thesis
         self.m = sys_const[1] # Mass of drone
         self.Ixx = sys_const[2]
         self.Iyy = sys_const[3]
         self.Izz = sys_const[4]
         self.sys_const = sys_const
-        self.x = 0
-        self.y = 0
-        self.z = 0
-        self.t = 0
+
+        # Position
+        self.X = 0  # Force magnitude
+        self.Y = 0  # Force magnitude
+        self.Z = 0  # Force magnitude
+
+        # Moment
+        self.L = 0  # Rolling Moment
+        self.M = 0  # Pitching Moment
+        self.N = 0  # Yawing Moment
+
+        # Velocity
+        self.U = 0  # Velocity in X direction
+        self.V = 0  # Velocity in Y direction
+        self.W = 0  # Velocity in Z direction
+
+        # Angulare Velocity
+        self.P = 0  # Roll Rate
+        self.Q = 0  # Pitch Rate
+        self.R = 0  # Yaw Rate
+
+        # Thrust of each motor
+        self.T1 = 0
+        self.T2 = 0
+        self.T3 = 0
+        self.T4 = 0
+
+        self.t = 0  #
         self.dt = 0.1
+
+
+        self.solver = scipy.integrate.RK4()
+
 
 
 
@@ -58,33 +87,38 @@ class drone():
 
 
 
-# Velocity in the X direction
-    def dXdt(self):
-        dXdt = -w*q+v*r+1/self.m*self.x
-        return dXdt
+# Acceleration in the X direction
+    def Udot(self):
+        Udot = np.divide(self.X, self.m) + self.V*self.R - self.W*self.Q
+        return Udot
 
-# Velocity in the Y direction
-    def dYdt(self):
-        dYdt = w*-u*r+np.divide(1,self.x)*self.y
-        return dYdt
+# Acceleration in the Y direction
+    def Vdot(self):
+        Vdot = np.divide(self.Y, self.m) - self.U*self.R + self.W*self.P
+        return Vdot
 
-# Velocity in the Z direction
-    def dZdt(self):
-        dZdt = -1*v*p+u*q+np.divide(1,self.m)*self.z
-        return dZdt
+# Acceleration in the Z direction
+    def Qdot(self):
+        Qdot = np.divide(self.Z, self.m) + self.U*self.Q - self.V*self.P
+        return Qdot
 
-    def theta_dot(self):
-        theta_dot = np.divide(-1,self.Ixx)*q*r*(self.Izz-self.Iyy)+np.divide(1,self.Ixx)*l
-        return theta_dot
+    def Pdot(self):
+        Pdot = np.divide(self.L, self.Ixx) - np.divide( (self.Izz - self.Iyy), self.Ixx)*self.Q*self.R
+        return Pdot
 
-    def  psi_dot(self):
-        psi_dot = np.divide(-1,self.Iyy)*p*r*(self.Ixx-self.Izz)+np.divide(1,self.Iyy)*m
-        return psi_dot
+    def Q(self):
+        pass
 
-    def phi_dot(self):
-        phi_dot = np.divide(-1,self.Izz)*p*q*(self.Iyy-self.Ixx)+np.divide(1,self.Izz)*n
+    def Rdot(self):
+        Rdot = np.divide(self.N, self.Izz) - np.divide( (self.Iyy - self.Ixx ))*self.P*self.Q
+        return Rdot
 
-    def dThrust_dt(self,tau):
+
+# Rotor lag dynamics
+    def dThrust_dt(self,T,tau,Tr):
+        dThrust_dt = np.divide(T,tau) + np.divide(Tr,tau)
+        return dThrust_dt
+
 
 
     def sumForces_X(self):
@@ -94,6 +128,7 @@ class drone():
         pass
 
     def sumForces_Z(self):
+        self.Z = -1*(self.T1 + self.T2 + self.T3 + self.T4)
         pass
 
 
@@ -112,5 +147,7 @@ class drone():
 
 
 # Determine the next state conditions
-    def step():
+    def step(self):
+
+
         pass
