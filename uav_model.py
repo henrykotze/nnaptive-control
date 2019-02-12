@@ -57,6 +57,8 @@ class drone():
 
 
 
+
+
         #self.solver = scipy.integrate.RK4()
 
 
@@ -154,14 +156,18 @@ class drone():
     def thrust(self):
         pass
 
-    def integration(self,t,x):
+    def integration(self,x):
         from scipy.integrate import quad
+        f = lambda x: x
+        return quad(f,self.t, self.t+self.t+self.dt)
 
 
 # Determine the next state conditions
     def step(self):
         from scipy.integrate import quad
         # Translation
+
+        print self.Udot
         u_dot = quad(self.Udot, self.t, self.t+self.dt) # Acceleration in x direction
         v_dot = quad(self.Vdot, self.t, self.t+self.dt) # Acceleration in y direction
         w_dot = quad(self.Wdot, self.t, self.t+self.dt) # Acceleration in z direction
@@ -173,11 +179,35 @@ class drone():
         r_dot = quad(self.Rdot, self.t, self.t+self.dt)
 
 
+        self.U = self.integration(u_dot)[1]
+        self.V = self.integration(v_dot)[1]
+        self.W = self.integration(w_dot)[1]
+
+
+        self.P = self.integration(p_dot)[1]
+        self.Q = self.integration(q_dot)[1]
+        self.R = self.integration(r_dot)[1]
+
+
+
+        self.xPos = self.integration(self.U)
+        self.yPos = self.integration(self.V)
+        self.zPos = self.integration(self.W)
+
+
+
+
+
+
+    def getStates(self):
+        return np.r_[self.xPos, self.yPos, self.zPos, self.U, self.V, self.W, \
+                    self.P, self.Q, self.R]
+
+
 
 
 
 
 drone1 = drone([1,1,1,1],1)
 
-
-drone1.step()
+print(drone1.getStates())
