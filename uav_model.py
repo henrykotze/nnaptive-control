@@ -12,7 +12,7 @@ init_cond: initial conditions
 '''
 class drone():
     g = 9.81 # Gravity constant
-    def __init__(self, sys_const, init_cond):
+    def __init__(self, sys_const, init_cond, time_step=0.1,sim_time=10):
         # Notation used from Paul D Moller Thesis
         self.m = sys_const[0] # Mass of drone
         self.Ixx = sys_const[1]
@@ -47,7 +47,8 @@ class drone():
         self.T4 = 0
 
         self.t = 0  #
-        self.dt = 0.1
+        self.dt = time_step
+        self.sim_time = sim_time
 
         # Position in Cartesian plane
         self.xPos = 0
@@ -96,7 +97,7 @@ class drone():
 
 # Acceleration in the X direction
     def Udot(self,t):
-        Udot = (np.divide(self.X, self.m) + self.V*self.R - self.W*self.Q)*t
+        Udot = (np.divide(self.X, self.m) + self.V*self.R - self.W*self.Q)
         return Udot
 
 # Acceleration in the Y direction
@@ -105,9 +106,9 @@ class drone():
         return Vdot
 
 # Acceleration in the Z direction
-    def Qdot(self,t):
-        Qdot = np.divide(self.Z, self.m) + self.U*self.Q - self.V*self.P
-        return Qdot
+    def Wdot(self,t):
+        Wdot = np.divide(self.Z, self.m) + self.U*self.Q - self.V*self.P
+        return Wdot
 
     def Pdot(self,t):
         Pdot = np.divide(self.L, self.Ixx) - np.divide( (self.Izz - self.Iyy), self.Ixx)*self.Q*self.R
@@ -115,6 +116,7 @@ class drone():
 
     def Qdot(self,t):
         Qdot = np.divide(self.M,self.Izz) - np.divide((self.Ixx - self.Izz), self.Ixx)*self.Q*self.R
+        return Qdot
 
     def Rdot(self,t):
         Rdot = np.divide(self.N, self.Izz) - np.divide( (self.Iyy - self.Ixx ), self.Izz)*self.P*self.Q
@@ -152,11 +154,25 @@ class drone():
     def thrust(self):
         pass
 
+    def integration(self,t,x):
+        from scipy.integrate import quad
+
 
 # Determine the next state conditions
     def step(self):
         from scipy.integrate import quad
-        u_dot = quad(self.Udot, self.t, self.t+self.dt)
+        # Translation
+        u_dot = quad(self.Udot, self.t, self.t+self.dt) # Acceleration in x direction
+        v_dot = quad(self.Vdot, self.t, self.t+self.dt) # Acceleration in y direction
+        w_dot = quad(self.Wdot, self.t, self.t+self.dt) # Acceleration in z direction
+
+
+        # Rotational
+        p_dot = quad(self.Pdot, self.t, self.t+self.dt)
+        q_dot = quad(self.Qdot, self.t, self.t+self.dt)
+        r_dot = quad(self.Rdot, self.t, self.t+self.dt)
+
+
 
 
 
