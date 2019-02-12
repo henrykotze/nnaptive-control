@@ -1,6 +1,7 @@
 import gym
 
 import numpy as np
+#from scipy.integrate import quad
 
 
 '''
@@ -13,16 +14,16 @@ class drone():
     g = 9.81 # Gravity constant
     def __init__(self, sys_const, init_cond):
         # Notation used from Paul D Moller Thesis
-        self.m = sys_const[1] # Mass of drone
-        self.Ixx = sys_const[2]
-        self.Iyy = sys_const[3]
-        self.Izz = sys_const[4]
+        self.m = sys_const[0] # Mass of drone
+        self.Ixx = sys_const[1]
+        self.Iyy = sys_const[2]
+        self.Izz = sys_const[3]
         self.sys_const = sys_const
 
         # Position
-        self.X = 0  # Force magnitude
-        self.Y = 0  # Force magnitude
-        self.Z = 0  # Force magnitude
+        self.X = 0  # Force magnitude in X direction
+        self.Y = 0  # Force magnitude in Y direction
+        self.Z = 0  # Force magnitude in Z direction
 
         # Moment
         self.L = 0  # Rolling Moment
@@ -48,8 +49,14 @@ class drone():
         self.t = 0  #
         self.dt = 0.1
 
+        # Position in Cartesian plane
+        self.xPos = 0
+        self.yPos = 0
+        self.zPos = 0
 
-        self.solver = scipy.integrate.RK4()
+
+
+        #self.solver = scipy.integrate.RK4()
 
 
 
@@ -88,29 +95,29 @@ class drone():
 
 
 # Acceleration in the X direction
-    def Udot(self):
-        Udot = np.divide(self.X, self.m) + self.V*self.R - self.W*self.Q
+    def Udot(self,t):
+        Udot = (np.divide(self.X, self.m) + self.V*self.R - self.W*self.Q)*t
         return Udot
 
 # Acceleration in the Y direction
-    def Vdot(self):
+    def Vdot(self,t):
         Vdot = np.divide(self.Y, self.m) - self.U*self.R + self.W*self.P
         return Vdot
 
 # Acceleration in the Z direction
-    def Qdot(self):
+    def Qdot(self,t):
         Qdot = np.divide(self.Z, self.m) + self.U*self.Q - self.V*self.P
         return Qdot
 
-    def Pdot(self):
+    def Pdot(self,t):
         Pdot = np.divide(self.L, self.Ixx) - np.divide( (self.Izz - self.Iyy), self.Ixx)*self.Q*self.R
         return Pdot
 
-    def Q(self):
-        pass
+    def Qdot(self,t):
+        Qdot = np.divide(self.M,self.Izz) - np.divide((self.Ixx - self.Izz), self.Ixx)*self.Q*self.R
 
-    def Rdot(self):
-        Rdot = np.divide(self.N, self.Izz) - np.divide( (self.Iyy - self.Ixx ))*self.P*self.Q
+    def Rdot(self,t):
+        Rdot = np.divide(self.N, self.Izz) - np.divide( (self.Iyy - self.Ixx ), self.Izz)*self.P*self.Q
         return Rdot
 
 
@@ -148,6 +155,13 @@ class drone():
 
 # Determine the next state conditions
     def step(self):
+        from scipy.integrate import quad
+        u_dot = quad(self.Udot, self.t, self.t+self.dt)
 
 
-        pass
+
+
+drone1 = drone([1,1,1,1],1)
+
+
+drone1.step()
