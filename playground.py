@@ -16,9 +16,9 @@ t = np.linspace(0,5,100)
 
 print(type(np.r_[1,1,1,1,1]))
 
-x = (2,2)
+x = np.matrix([[1,2,3],[4,5,5]])
 
-print x[1]
+print x
 
 
 
