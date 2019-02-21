@@ -201,8 +201,6 @@ class drone():
         self.sumMoment_m()
         self.sumMoment_n()
 
-        print(self.X, self.Y, self.Z)
-        print(self.L, self.M, self.N)
 
 
 
@@ -213,8 +211,6 @@ class drone():
         self.update_Qdot()
         self.update_Rdot()
 
-        print(self.Udot,self.Vdot,self.Wdot)
-        print(self.Pdot,self.Qdot,self.Rdot)
 
 
 
@@ -223,32 +219,33 @@ class drone():
         self.V += self.integration(self.Vdot)[0]
         self.W += self.integration(self.Wdot)[0]
 
-        print(self.U,self.V,self.W)
 
         self.P += self.integration(self.Pdot)[0]
         self.Q += self.integration(self.Qdot)[0]
         self.R += self.integration(self.Rdot)[0]
 
 
-        self.theta_dot = self.bodyAngularRatesToEulerAngler()[0]
-        self.phi_dot = self.bodyAngularRatesToEulerAngler()[1]
-        self.psi_dot = self.bodyAngularRatesToEulerAngler()[2]
+        self.theta_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[0])
+        self.phi_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[1])
+        self.psi_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[2])
 
 
         self.xPos += self.integration(self.U)[0]
         self.yPos += self.integration(self.V)[0]
         self.zPos += self.integration(self.W)[0]
 
-        self.theta = self.integration(self.theta_dot)[0]
-        self.phi = self.integration(self.phi_dot)[0]
-        self.psi = self.integration(self.psi)[0]
+        self.theta += self.integration(self.theta_dot)[0]
+        self.phi += self.integration(self.phi_dot)[0]
+        self.psi += self.integration(self.psi)[0]
 
         self.t += self.dt
 
 
-    def getStates(self):
-        return np.r_[self.xPos,self.yPos,self.zPos,self.U,self.V,self.W]
+        # Check
 
+
+    def getStates(self):
+        return np.r_[ self.xPos, self.yPos, self.zPos, self.theta_dot, self.phi_dot, self.psi_dot, self.theta, self.phi, self.psi]
 # System Constants used from Moller
 
 systemConstants = np.array([1,1,1,1])   # [mass,Ixx,Iyy,Izz]
@@ -257,11 +254,14 @@ initialConditions = np.array([0,0,0,0,0,0])   # [x,y,z,theta,phi,psi]
 
 drone1 = drone(systemConstants,initialConditions)
 
-states = np.zeros(6)
+states = np.zeros(9)
 
 for k in range(100):
     drone1.step()
     states = np.vstack( (states, drone1.getStates() ) )
+
+
+
 plt.figure(1)
 plt.plot(states[:,0:3],'o-', mew=1, ms=8,mec='w')
 plt.legend(['x','y','z', 'u','v','w', 'p', 'q', 'r'])
@@ -270,6 +270,15 @@ plt.grid()
 
 plt.figure(2)
 plt.plot(states[:,3:6],'o-', mew=1, ms=8,mec='w')
-plt.legend(['u','v','w', 'p'])
+plt.legend([r'$\dot \theta$','$\dot \phi$','$\dot \psi$'])
 plt.grid()
+
+
+plt.figure(3)
+plt.plot(states[:,6:9],'o-', mew=1, ms=8,mec='w')
+plt.legend([r'$\theta$','$\phi$','$\psi$'])
+plt.grid()
+
+
+
 plt.show()
