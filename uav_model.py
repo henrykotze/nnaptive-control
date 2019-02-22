@@ -53,10 +53,10 @@ class drone():
         self.Rdot = 0  # Yaw Acceleration
 
         # Thrust of each motor
-        self.T1 = 0
-        self.T2 = 0
-        self.T3 = 0
-        self.T4 = 0
+        self.T1 = 12
+        self.T2 = 30
+        self.T3 = 10
+        self.T4 = 5
 
         self.t = 0  #
         self.dt = time_step
@@ -192,7 +192,7 @@ class drone():
 # Determine the next state conditions
     def step(self):
 
-
+        # Update all new forces and moments on the drone
         self.sumForces_X()
         self.sumForces_X()
         self.sumForces_Y()
@@ -203,7 +203,7 @@ class drone():
 
 
 
-
+        # Determine the new body Acceleration and angular rotaions
         self.update_Udot()
         self.update_Vdot()
         self.update_Wdot()
@@ -230,6 +230,9 @@ class drone():
         self.psi_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[2])
 
 
+        #[[self.theta_dot], [self.phi_dot], [self.psi_dot]] = self.bodyAngularRatesToEulerAngler()
+
+
         self.xPos += self.integration(self.U)[0]
         self.yPos += self.integration(self.V)[0]
         self.zPos += self.integration(self.W)[0]
@@ -248,37 +251,45 @@ class drone():
         return np.r_[ self.xPos, self.yPos, self.zPos, self.theta_dot, self.phi_dot, self.psi_dot, self.theta, self.phi, self.psi]
 # System Constants used from Moller
 
-systemConstants = np.array([1,1,1,1])   # [mass,Ixx,Iyy,Izz]
-initialConditions = np.array([0,0,0,0,0,0])   # [x,y,z,theta,phi,psi]
-
-
-drone1 = drone(systemConstants,initialConditions)
-
-states = np.zeros(9)
-
-for k in range(100):
-    drone1.step()
-    states = np.vstack( (states, drone1.getStates() ) )
-
-
-
-plt.figure(1)
-plt.plot(states[:,0:3],'o-', mew=1, ms=8,mec='w')
-plt.legend(['x','y','z', 'u','v','w', 'p', 'q', 'r'])
-plt.grid()
-
-
-plt.figure(2)
-plt.plot(states[:,3:6],'o-', mew=1, ms=8,mec='w')
-plt.legend([r'$\dot \theta$','$\dot \phi$','$\dot \psi$'])
-plt.grid()
-
-
-plt.figure(3)
-plt.plot(states[:,6:9],'o-', mew=1, ms=8,mec='w')
-plt.legend([r'$\theta$','$\phi$','$\psi$'])
-plt.grid()
-
-
-
-plt.show()
+# systemConstants = np.array([1,1,1,1])   # [mass,Ixx,Iyy,Izz]
+# initialConditions = np.array([0,0,0,0,0,0])   # [x,y,z,theta,phi,psi]
+#
+#
+# drone1 = drone(systemConstants,initialConditions)
+#
+# states = np.zeros(9)
+# save_data = np.zeros(2)
+#
+# for k in range(3):
+#     drone1.step()
+#
+#     print(drone1.getStates())
+#     states = np.vstack( (states, drone1.getStates() ) )
+#
+#
+# plt.rc('text', usetex=True)
+# plt.rc('font', family='serif')
+# plt.rc('font', size=12)
+#
+#
+#
+# plt.figure(1)
+# plt.plot(states[:,0:3],'o-', mew=1, ms=8,mec='w')
+# plt.legend(['x','y','z', 'u','v','w', 'p', 'q', 'r'])
+# plt.grid()
+#
+#
+# plt.figure(2)
+# plt.plot(states[:,3:6],'o-', mew=1, ms=8,mec='w')
+# plt.legend([r'$\dot \theta$','$\dot \phi$','$\dot \psi$'])
+# plt.grid()
+#
+#
+# plt.figure(3)
+# plt.plot(states[:,6:9],'o-', mew=1, ms=8,mec='w')
+# plt.legend([r'$\theta$','$\phi$','$\psi$'])
+# plt.grid()
+#
+#
+#
+# plt.show()
