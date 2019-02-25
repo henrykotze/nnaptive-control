@@ -111,7 +111,11 @@ class drone():
                     [0, np.cos(self.phi), -1*np.sin(self.phi)], \
                     [0, np.sin(self.phi)/np.cos(self.theta), np.cos(self.phi)/np.cos(self.theta)] ] )*np.matrix([ [self.P],[self.Q],[self.R]])
 
-
+    def inputThrust(self,T1,T2,T3,T4):
+        self.T1 = T1
+        self.T2 = T2
+        self.T3 = T3
+        self.T4 = T4
 
 
 
