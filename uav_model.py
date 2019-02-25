@@ -53,10 +53,10 @@ class drone():
         self.Rdot = 0  # Yaw Acceleration
 
         # Thrust of each motor
-        self.T1 = 12
-        self.T2 = 30
-        self.T3 = 10
-        self.T4 = 5
+        self.T1 = 0
+        self.T2 = 0
+        self.T3 = 0
+        self.T4 = 0
 
         self.t = 0  #
         self.dt = time_step
@@ -111,11 +111,11 @@ class drone():
                     [0, np.cos(self.phi), -1*np.sin(self.phi)], \
                     [0, np.sin(self.phi)/np.cos(self.theta), np.cos(self.phi)/np.cos(self.theta)] ] )*np.matrix([ [self.P],[self.Q],[self.R]])
 
-    def inputThrust(self,T1,T2,T3,T4):
-        self.T1 = T1
-        self.T2 = T2
-        self.T3 = T3
-        self.T4 = T4
+    def setThrust(self,thrust):
+        self.T1 = thrust[0]
+        self.T2 = thrust[1]
+        self.T3 = thrust[2]
+        self.T4 = thrust[3]
 
 
 
