@@ -14,7 +14,7 @@ init_cond: initial conditions
 '''
 class drone():
     g = 9.81 # Gravity constant
-    def __init__(self, sys_const, init_cond=np.array([0,0,0,0,0,0]), time_step=0.001,sim_time=10):
+    def __init__(self, sys_const, init_cond=np.array([0,0,0,0,0,0]), time_step=0.0001,sim_time=10):
         # Notation used from Paul D Moller Thesis
         self.m = sys_const[0] # Mass of drone
         self.Ixx = sys_const[1]
@@ -256,3 +256,17 @@ class drone():
 
     def getStates(self):
         return np.r_[ self.xPos, self.yPos, self.zPos, self.theta_dot, self.phi_dot, self.psi_dot, self.theta, self.phi, self.psi]
+
+
+
+    def getAllStates(self):
+        return np.r_[self.T1, self.T2,self.T3, self.T4, self.xPos, self.yPos,self.zPos,\
+                    self.U, self.V,self.W, self.Udot,self.Vdot,self.Wdot, \
+                    self.Pdot, self.Qdot, self.Rdot, self.P, self.Q, self.R,\
+                    self.theta, self.phi, self.psi]
+
+
+    def getEstimatedStates(self):
+        return np.r_[self.xPos, self.yPos,self.zPos, self.U, self.V,self.W, \
+                    self.Udot,self.Vdot,self.Wdot, self.Pdot, self.Qdot, self.Rdot,\
+                    self.P, self.Q, self.R, self.theta, self.phi, self.psi]

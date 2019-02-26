@@ -18,7 +18,7 @@ sys_constants = [1,1,1,1]
 
 
 # base filename
-filename = 'response-0.txt'
+filename = './learning_data/response-0.npz'
 
 
 
@@ -44,55 +44,28 @@ def writeData():
     pass
 
 
-# Run the simulation and gather information
-def simulate():
-
-
-    for numSim in range(0,10):
-        init_conditions = init_conds()
-        drone1 = drone(sys_constants,init_conditions)
-
-
-        for t in range(0,2):
-
-            drone1.step()
-            states = np.vstack( (states, drone1.getStates() ) )
-            drone1.setThrust(inputThrust())
-
-
-
-
-
-
-states = np.zeros(9)
-
-
-
 if __name__ == '__main__':
 
-    for numSim in range(0,2):
+    for numSim in range(0,10):
         print('Number of simulation: ', numSim)
-        file = open(filename, 'w+')
 
         init_conditions = init_conds()
         drone1 = drone(sys_constants,init_conditions)
+        drone1.setThrust(inputThrust())
+
+        input = np.zeros(22)
+        output = np.zeros(18)
 
 
-        for t in range(0,2):
+        for t in range(0,1500):
 
+            input = np.vstack( (input,drone1.getAllStates() ) )
             drone1.step()
-            states = np.vstack( (states, drone1.getStates() ) )
-            drone1.setThrust(inputThrust())
+            output = np.vstack( (output, drone1.getEstimatedStates() ) )
 
 
-        np.savetxt(file,states)
-        file.close()
+        # Saves response in *.npz file
+        np.savez(filename,features=input,labels=output)
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))
-
-
-
-
-
-    pass

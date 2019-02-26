@@ -7,3 +7,7 @@ contents = urllib.request.urlopen('http://weather.sun.ac.za/api/getlivedata.php?
 
 
 print(contents)
+
+print(contents.split())
+
+time_raw, winddir_raw, windsec_raw, wind_raw = contents.split( )
