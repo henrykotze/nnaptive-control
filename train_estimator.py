@@ -3,6 +3,12 @@
 
 import tensorflow as tf
 import numpy as np
+import os
+
+
+
+# Base name for data files:
+filaname='./learning_data/response-0.npz'
 
 
 # Building model
@@ -48,14 +54,22 @@ def plot_history(history):
 
 
 # Getting data
-# numpyFile: location of a *.npz file
-def loadData(numpyFile)
-    with np.load(numpyFile) as data:
-        features = data["features"]
-        labels = data["labels"]
+# dir: location of directory containing the *.npz file
+def loadData(dir):
+
+    # in the directory, dir, determine how many data file it contains
+    path,dirs,files = next(os.walk(dir))
+
+    for numFile in range(len(files)):
+        with np.load(filename) as data:
+            features = data["features"]
+            labels = data["labels"]
 
 
-# each row of `features` corresponds to the same row as `labels`.
+            filename = filename.replace(str(numFile),str(numFile+1))
+
+
+    # each row of `features` corresponds to the same row as `labels`.
     assert features.shape[0] == labels.shape[0]
     features_placeholder = tf.placeholder(features.dtype, features.shape)
     labels_placeholder = tf.placeholder(labels.dtype, labels.shape)

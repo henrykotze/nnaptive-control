@@ -57,7 +57,7 @@ if __name__ == '__main__':
         output = np.zeros(18)
 
 
-        for t in range(0,1500):
+        for t in range(0,2000):
 
             input = np.vstack( (input,drone1.getAllStates() ) )
             drone1.step()

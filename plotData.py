@@ -1,10 +1,18 @@
 from uav_model import drone
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 
-filename = './learning_data/response-4.npz'
+filename = './learning_data/response-0.npz'
+try:
+    responseDesired = sys.argv[1]
+    filename = filename.replace("0",responseDesired)
+except IndexError:
+    print('Provide a number to plot a response')
 
+
+print("Plotting Response of file: ", filename)
 
 
 data = np.load(filename)
@@ -23,6 +31,13 @@ plt.figure(1)
 plt.plot(states[:,0:4],'-', mew=1, ms=8,mec='w')
 plt.legend(['$T_{1}$','$T_{2}$','$T_{3}$','$T_{4}$'])
 plt.grid()
+
+
+plt.figure(7)
+plt.plot(states[:,4:7],'-', mew=1, ms=8,mec='w')
+plt.legend(['$x$','$y$','$z$'])
+plt.grid()
+
 
 plt.figure(2)
 plt.plot(states[:,7:10],'-', mew=1, ms=8,mec='w')
@@ -48,6 +63,14 @@ plt.figure(5)
 plt.plot(states[:,16:19],'-', mew=1, ms=8,mec='w')
 plt.legend(['$P$','$Q$','$R$'])
 plt.grid()
+
+
+plt.figure(6)
+plt.plot(states[:,19:22],'-', mew=1, ms=8,mec='w')
+plt.legend([r'$\theta$','$\phi$','$\psi$'])
+plt.grid()
+
+
 
 # plt.figure(3)
 # plt.plot(states[:,6:9],'o-', mew=1, ms=8,mec='w')
