@@ -55,32 +55,35 @@ def plot_history(history):
 
 # Getting data
 # dir: location of directory containing the *.npz file
-def loadData(dir):
+def loadData(dir,tf_dataset):
 
-    # in the directory, dir, determine how many data file it contains
+    # in the directory, dir, determine how many *.npz files it contains
     path,dirs,files = next(os.walk(dir))
 
     for numFile in range(len(files)):
         with np.load(filename) as data:
-            features = data["features"]
-            labels = data["labels"]
 
+            features = data["features"] # inputs to ANN
+            labels = data["labels"] # outputs to ANN
 
+            # fetch next name of *.npz file to be loaded
             filename = filename.replace(str(numFile),str(numFile+1))
 
 
-    # each row of `features` corresponds to the same row as `labels`.
-    assert features.shape[0] == labels.shape[0]
-    features_placeholder = tf.placeholder(features.dtype, features.shape)
-    labels_placeholder = tf.placeholder(labels.dtype, labels.shape)
+            # each row of `features` corresponds to the same row as `labels`.
+            assert features.shape[0] == labels.shape[0]
+            features_placeholder = tf.placeholder(features.dtype, features.shape)
+            labels_placeholder = tf.placeholder(labels.dtype, labels.shape)
 
-    return tf.data.Dataset.from_tensor_slices((features_placeholder, labels_placeholder))
+            # add newly loaded data into tensorflow dataset provided as argument
+            tf_dataset.concatenate(tf.data.Dataset.from_tensor_slices((features_placeholder, labels_placeholder)))
 
 
-
-
+    return tf_dataset
 
 
 
 if __name__ == '__main__':
-    pass
+    print("in Main")
+
+    #dataset = tf.data.Dataset()

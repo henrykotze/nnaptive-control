@@ -107,7 +107,7 @@ class drone():
 
 
     def bodyAngularRatesToEulerAngler(self):
-        return np.matrix( [ [1, np.sin(self.phi)*np.sin(self.theta), np.cos(self.phi)*np.tan(self.theta)], \
+        return np.matrix( [ [1, np.sin(self.phi)*np.tan(self.theta), np.cos(self.phi)*np.tan(self.theta)], \
                     [0, np.cos(self.phi), -1*np.sin(self.phi)], \
                     [0, np.sin(self.phi)/np.cos(self.theta), np.cos(self.phi)/np.cos(self.theta)] ] )*np.matrix([ [self.P],[self.Q],[self.R]])
 
@@ -229,8 +229,10 @@ class drone():
         self.R += self.integration(self.Rdot)[0]
 
 
-        self.theta_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[0])
-        self.phi_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[1])
+
+
+        self.theta_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[1])
+        self.phi_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[0])
         self.psi_dot += np.asscalar(self.bodyAngularRatesToEulerAngler()[2])
 
 

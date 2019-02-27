@@ -12,9 +12,11 @@ PI = np.pi
 # Maximum thrust delivered
 thrust_MAX=30
 # Minimum thrust delivered
-thrust_MIN=20
+thrust_MIN=1
 # System Constants
 sys_constants = [1,1,1,1]
+# time of simulations
+time=1000
 
 
 # base filename
@@ -57,7 +59,7 @@ if __name__ == '__main__':
         output = np.zeros(18)
 
 
-        for t in range(0,2000):
+        for t in range(0,time):
 
             input = np.vstack( (input,drone1.getAllStates() ) )
             drone1.step()
