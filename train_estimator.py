@@ -1,6 +1,6 @@
 # Estimator as a Neural Network for the rotary wing UAV
-
-
+import pandas as pd
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -19,7 +19,6 @@ def build_model(dataset):
     # model.add(Dense(22,input_shape=dataset.output_shapes[0]))
     model = keras.Sequential([
     layers.Dense(22, activation=tf.nn.relu, input_shape=dataset.output_shapes[0] ), \
-    layers.Dense(18, activation=tf.nn.relu), \
     layers.Dense(18)])
 
     optimizer = tf.keras.optimizers.RMSprop(0.001)
@@ -95,6 +94,10 @@ def loadData(dir,filename,features=[],labels=[]):
     return [tf.data.Dataset.from_tensor_slices((features_placeholder, labels_placeholder)),features,labels]
 
 
+class PrintDot(keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs):
+        if epoch % 100 == 0: print('')
+        print('.', end='')
 
 
 
@@ -107,3 +110,13 @@ if __name__ == '__main__':
 
 
     model = build_model(dataset)
+
+    model.summary()
+
+
+    EPOCHS = 50
+
+    history = model.fit(features, labels, epochs=EPOCHS, \
+    validation_split = 0.2, verbose=0,callbacks=[PrintDot()])
+
+    plot_history(history)
