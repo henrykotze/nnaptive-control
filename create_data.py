@@ -53,7 +53,8 @@ if __name__ == '__main__':
 
         init_conditions = init_conds()
         drone1 = drone(sys_constants,init_conditions)
-        drone1.setThrust(inputThrust())
+        drone1.setThrust([20,5,5,20])
+
 
         input = np.zeros(22)
         output = np.zeros(18)
