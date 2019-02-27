@@ -2,9 +2,10 @@
 
 
 import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
 import numpy as np
 import os
-
 
 
 # Base name for data files:
@@ -12,17 +13,20 @@ filename='./learning_data/response-0.npz'
 data_directory='./learning_data/'
 
 # Building model
-def build_model(train_dataset):
+def build_model(dataset):
+
+    # model = Sequential()
+    # model.add(Dense(22,input_shape=dataset.output_shapes[0]))
     model = keras.Sequential([
-    layers.Dense(22, activation=tf.nn.relu, input_shape=[len(train_dataset.keys())]),
-    layers.Dense(18, activation=tf.nn.relu),
+    layers.Dense(22, activation=tf.nn.relu, input_shape=dataset.output_shapes[0] ), \
+    layers.Dense(18, activation=tf.nn.relu), \
     layers.Dense(18)])
 
     optimizer = tf.keras.optimizers.RMSprop(0.001)
 
-    model.compile(loss='mean_squared_error',
-                optimizer=optimizer,
-                metrics=['mean_absolute_error', 'mean_squared_error'])
+    model.compile(loss='mean_squared_error',    \
+                    optimizer=optimizer,        \
+                    metrics=['mean_absolute_error', 'mean_squared_error'])
 
     return model
 
@@ -100,4 +104,6 @@ if __name__ == '__main__':
 
     [dataset,features,labels] = loadData(data_directory,filename)
 
-    print(features.shape,labels.shape)
+
+
+    model = build_model(dataset)
