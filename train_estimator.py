@@ -18,14 +18,16 @@ def build_model(dataset):
     # model = Sequential()
     # model.add(Dense(22,input_shape=dataset.output_shapes[0]))
     model = keras.Sequential([
-    layers.Dense(22, activation=tf.nn.relu, input_shape=dataset.output_shapes[0] ), \
-    layers.Dense(18)])
+    # layers.Flatten(input_shape=(4,)),\
+    layers.Dense(4, activation=tf.nn.relu, input_shape=dataset.output_shapes[0] ), \
+    layers.Dense(4, activation=tf.nn.relu), \
+    layers.Dense(3)])
 
     optimizer = tf.keras.optimizers.RMSprop(0.001)
 
     model.compile(loss='mean_squared_error',    \
                     optimizer=optimizer,        \
-                    metrics=['mean_absolute_error', 'mean_squared_error'])
+                    metrics=['mean_absolute_error', 'mean_squared_error', 'accuracy'])
 
     return model
 
@@ -107,6 +109,8 @@ if __name__ == '__main__':
 
     [dataset,features,labels] = loadData(data_directory,filename)
 
+    print(dataset.output_shapes[0])
+
 
 
     model = build_model(dataset)
@@ -114,9 +118,12 @@ if __name__ == '__main__':
     model.summary()
 
 
-    EPOCHS = 50
+    EPOCHS = 20
 
     history = model.fit(features, labels, epochs=EPOCHS, \
     validation_split = 0.2, verbose=0,callbacks=[PrintDot()])
 
     plot_history(history)
+
+    print('\n Model Saved')
+    model.save('./my_model_h5')

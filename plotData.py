@@ -29,46 +29,46 @@ plt.rc('font', size=12)
 
 plt.figure(1)
 plt.plot(states[:,0:4],'-', mew=1, ms=8,mec='w')
-plt.legend(['$T_{1}$','$T_{2}$','$T_{3}$','$T_{4}$'])
+plt.legend(['$input$','$\ddot y$','$\dot y $','$y$'])
 plt.grid()
 
 
-plt.figure(7)
-plt.plot(states[:,4:7],'-', mew=1, ms=8,mec='w')
-plt.legend(['$x$','$y$','$z$'])
-plt.grid()
-
-
-plt.figure(2)
-plt.plot(states[:,7:10],'-', mew=1, ms=8,mec='w')
-plt.legend(['U','V','W'])
-plt.grid()
-
-
-
-plt.figure(3)
-plt.plot(states[:,10:13],'-', mew=1, ms=8,mec='w')
-plt.legend(['$\dot U$','$\dot V$','$\dot W$'])
-plt.grid()
-
-
-plt.figure(4)
-plt.plot(states[:,13:16],'-', mew=1, ms=8,mec='w')
-plt.legend(['$\dot P$','$\dot Q$','$\dot R$'])
-plt.grid()
-
-
-
-plt.figure(5)
-plt.plot(states[:,16:19],'-', mew=1, ms=8,mec='w')
-plt.legend(['$P$','$Q$','$R$'])
-plt.grid()
-
-
-plt.figure(6)
-plt.plot(states[:,19:22],'-', mew=1, ms=8,mec='w')
-plt.legend([r'$\theta$','$\phi$','$\psi$'])
-plt.grid()
+# plt.figure(7)
+# plt.plot(states[:,4:7],'-', mew=1, ms=8,mec='w')
+# plt.legend(['$x$','$y$','$z$'])
+# plt.grid()
+#
+#
+# plt.figure(2)
+# plt.plot(states[:,7:10],'-', mew=1, ms=8,mec='w')
+# plt.legend(['U','V','W'])
+# plt.grid()
+#
+#
+#
+# plt.figure(3)
+# plt.plot(states[:,10:13],'-', mew=1, ms=8,mec='w')
+# plt.legend(['$\dot U$','$\dot V$','$\dot W$'])
+# plt.grid()
+#
+#
+# plt.figure(4)
+# plt.plot(states[:,13:16],'-', mew=1, ms=8,mec='w')
+# plt.legend(['$\dot P$','$\dot Q$','$\dot R$'])
+# plt.grid()
+#
+#
+#
+# plt.figure(5)
+# plt.plot(states[:,16:19],'-', mew=1, ms=8,mec='w')
+# plt.legend(['$P$','$Q$','$R$'])
+# plt.grid()
+#
+#
+# plt.figure(6)
+# plt.plot(states[:,19:22],'-', mew=1, ms=8,mec='w')
+# plt.legend([r'$\theta$','$\phi$','$\psi$'])
+# plt.grid()
 
 
 

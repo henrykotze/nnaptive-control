@@ -48,12 +48,12 @@ def writeData():
 
 if __name__ == '__main__':
 
-    for numSim in range(0,10):
+    for numSim in range(0,100):
         print('Number of simulation: ', numSim)
 
         init_conditions = init_conds()
         drone1 = drone(sys_constants,init_conditions)
-        drone1.setThrust([20,5,5,20])
+        drone1.setThrust(inputThrust())
 
 
         input = np.zeros(22)
