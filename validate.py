@@ -55,67 +55,79 @@ def loadData(dir,filename,features=[],labels=[]):
 
 
 def compare2model(ann,inputMag):
-    transferModel = second_order(8,0.15,input=inputMag)
 
-    input_ann = np.array([[inputMag,0,0,0]])
+    transferModel = second_order(2,1,input=inputMag)
 
-    model_output = np.zeros(4)
-    ann_output = np.zeros(4)
+    ann_input = np.array([inputMag,0,0,0])
+
+    ann_response = np.zeros(4)
+    model_response = np.zeros(4)
 
 
     for t in range(0,8000):
-        next_input = np.append(inputMag,model.predict(input_ann))
+
+
+        model_output = transferModel.getAllStates()
+        ann_output = ann.predict(np.array([model_output]))
+
+
+        ann_output = np.append(inputMag,ann_output)
         transferModel.step()
 
-        model_output = np.vstack( (model_output, transferModel.getAllStates() ) )
-        ann_output = np.vstack( ( model_output, next_input ) )
 
-        input_ann = np.array([next_input])
 
-    return [model_output, ann_output]
+
+        model_response = np.vstack( (model_response, model_output ) )
+        ann_response = np.vstack( ( ann_response, ann_output ) )
+
+
+    return [model_response, ann_response]
 
 
 if __name__ == '__main__':
 
     # Setting up an empty dataset to load the data into
 
-    # [dataset,test_features,test_labels] = loadData(data_directory,filename)
-
-    # print(test_features[0])
-
-    # print(test_features.shape)
-    # print(test_features[0])
-    # print(test_features[1])
+#     [dataset,test_features,test_labels] = loadData(data_directory,filename)
 #
+#     # print(test_features[0])
 #
-    model = keras.models.load_model('./my_model_h5')
-    model.summary
-#
-#     loss, mean_asb_error, meas_squared_error, acc = model.evaluate(test_features, test_labels)
-#
+#     # print(test_features.shape)
+#     # print(test_features[0])
+#     # print(test_features[1])
 # #
+# #
+    model = keras.models.load_model('./trained_models/model_2nd_order')
+    # model.summary
+# #
+#     loss, mean_asb_error, meas_squared_error, acc = model.evaluate(test_features, test_labels)
+# #
+# # #
 #     print("Restored model, accuracy: {:5.2f}%".format(100*acc))
-#
+# #
 #     test_prediction = model.predict(test_features).flatten()
-#
-#
+# #
+# #
 #     error = test_prediction - test_labels.flatten()
 #     plt.hist(error, bins = 50)
 #     plt.xlabel("Prediction Error [MPG]")
 #     _ = plt.ylabel("Count")
-#
+# #
 #     plt.show()
 
-    [model_output, transfer_output] = compare2model(model,-10)
+    [model_output, ann_output] = compare2model(model,-0.48)
 
+
+
+    fig, ax = plt.subplots()
 
     plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     plt.rc('font', size=12)
 
-    plt.figure(1)
-    plt.plot(model_output,'-', mew=1, ms=8,mec='w')
-    plt.grid()
-    plt.plot(transfer_output,'--', mew=1, ms=8,mec='w')
+    ax.plot(ann_output,'b-',label='Neural Network',mew=1, ms=8,mec='w')
 
+    ax.plot(model_output,'r--', label='Mathematical Model', mew=1, ms=8,mec='w')
+    ax.grid()
+    ax.legend()
     plt.show()

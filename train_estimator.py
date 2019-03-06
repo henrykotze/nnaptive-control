@@ -20,10 +20,10 @@ def build_model(dataset):
     model = keras.Sequential([
     # layers.Flatten(input_shape=(4,)),\
     layers.Dense(4, activation=tf.nn.relu, input_shape=dataset.output_shapes[0] ), \
-    layers.Dense(4, activation=tf.nn.relu), \
+    layers.Dense(3,activation=tf.nn.relu),\
     layers.Dense(3)])
 
-    optimizer = tf.keras.optimizers.RMSprop(0.001)
+    optimizer = tf.keras.optimizers.Adam()
 
     model.compile(loss='mean_squared_error',    \
                     optimizer=optimizer,        \
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     EPOCHS = 20
 
     history = model.fit(features, labels, epochs=EPOCHS, \
-    validation_split = 0.2, verbose=0,callbacks=[PrintDot()])
+    validation_split = 0.2, verbose=1,callbacks=[PrintDot()])
 
     plot_history(history)
 

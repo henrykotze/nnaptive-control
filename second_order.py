@@ -10,13 +10,13 @@ import numpy as np
 
 
 class second_order:
-    def __init__(self,wn,zeta,time_step=0.001,input=0):
+    def __init__(self,wn,zeta,time_step=0.001,input=0, ydotdot = 0, ydot = 0, y = 0):
         self.wn = wn
         self.zeta = zeta
         self.input = input
-        self.ydotdot = 0
-        self.ydot = 0
-        self.y = 0
+        self.ydotdot = ydotdot
+        self.ydot = ydot
+        self.y = y
         self.t = 0
         self.dt = time_step
 

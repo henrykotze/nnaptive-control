@@ -3,31 +3,53 @@ import numpy as np
 import scipy.integrate as spi
 import matplotlib.pyplot as plt
 import random as rand
+import argparse
 
 
 
-zeta=0.15
-wn=8
-time=8000
+parser = argparse.ArgumentParser(\
+        prog='create data 2nd order',\
+        description='Creates .npz files of step responses with given damping ratio\
+                    frequency'
+        )
 
 
-filename = './test_data/response-0.npz'
+parser.add_argument('-zeta', default = 1, help='the damping ratio the response, default: 1')
+parser.add_argument('-wn', default= 2, help='the natural frequency of the response, default: 2')
+parser.add_argument('-loc', default='./learning_data/', help='location to store responses, default: ./')
+parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-*')
+parser.add_argument('-t', default=1000, help='time lenght of responses, default: 1000ms')
+parser.add_argument('-numSim', default=2, help='number of responses to generate, default: 1')
 
-max_input=1
+
+args = parser.parse_args()
+
+zeta=float(vars(args)['zeta'])
+wn=float(vars(args)['wn'])
+time=int(vars(args)['t'])
+numberSims = int(vars(args)['numSim'])
+filename = vars(args)['loc']+'/'+vars(args)['filename']
+
+
+# filename = './test_data/response-0.npz'
+
+max_input=5
 # Minimum thrust delivered
-min_input=-1
+min_input=-5
 
+init_condition_max = 1
+init_condition_min = -1
 
 
 
 
 if __name__ == '__main__':
-
-    for numSim in range(0,40):
+    print('Writing responses to: ', filename)
+    for numSim in range(0,numberSims):
         print('Number of simulation: ', numSim)
 
         response = second_order(wn,zeta)
-        response.update_input(rand.uniform(min_input,max_input))
+        response.update_input(rand.uniform(min_input,max_input)/10)
 
         input = np.zeros(4)
         output = np.zeros(3)
@@ -35,7 +57,7 @@ if __name__ == '__main__':
 
         for t in range(0,time):
 
-            input = np.vstack( (input,response.getAllStates() ) )
+            input = np.vstack( (input, response.getAllStates()+np.random.randn(1,4)*0) )
             response.step()
             output = np.vstack( (output, response.getEstimatedStates() ) )
 
