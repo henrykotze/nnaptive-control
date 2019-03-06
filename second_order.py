@@ -28,6 +28,12 @@ class second_order:
     def update_input(self,input):
         self.input = input
 
+    def set_zeta(self,zeta):
+        self.zeta = zeta
+
+    def set_wn(self,wn):
+        self.wn = wn
+
 
     def integration(self,x):
         from scipy.integrate import quad
