@@ -28,7 +28,23 @@ zeta=float(vars(args)['zeta'])
 wn=float(vars(args)['wn'])
 time=int(vars(args)['t'])
 numberSims = int(vars(args)['numSim'])
+dir = vars(args)['loc']
 filename = vars(args)['loc']+'/'+vars(args)['filename']
+
+
+# Add a Readme file in directory to show selected variables that describe the
+# responses
+info = '*******************************'+'\n'+'INFORMATION'+'\n'+\
+        '*******************************'+'\n'+'wn: '+str(wn)+'\n'\
+        +'zeta: '+str(zeta)+'\n'+'time: ' + str(time) \
+        + '\n' + 'number of responses: ' + str(numberSims)
+
+f = open(str(dir + '/readme.txt'), 'w+')
+
+f.write(info)
+f.close()
+
+
 
 
 # filename = './test_data/response-0.npz'
