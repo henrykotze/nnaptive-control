@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 # Estimator as a Neural Network for the rotary wing UAV
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,21 +9,38 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import numpy as np
 import os
+import argparse
+
+
+
+parser = argparse.ArgumentParser(\
+        prog='Trains the Neural Network ',\
+        description=''
+        )
+
+
+parser.add_argument('-loc', default='./learning_data/', help='location of stored responses, default: ./')
+parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-*')
+parser.add_argument('-epochs', default=1, help='Number of Epochs, default: 1')
+
+
+args = parser.parse_args()
+dir = vars(args)['loc']
+filename = vars(args)['loc']+'/'+vars(args)['filename']
+epochs = int(vars(args)['epochs'])
 
 
 # Base name for data files:
-filename='./learning_data/response-0.npz'
-data_directory='./learning_data/'
+# filename='./learning_data/response-0.npz'
+# data_directory='./learning_data/'
 
 # Building model
 def build_model(dataset):
 
-    # model = Sequential()
-    # model.add(Dense(22,input_shape=dataset.output_shapes[0]))
     model = keras.Sequential([
     # layers.Flatten(input_shape=(4,)),\
-    layers.Dense(4, activation=tf.nn.relu, input_shape=dataset.output_shapes[0] ), \
-    layers.Dense(3,activation=tf.nn.relu),\
+    layers.Dense(4, activation=tf.nn.relu,input_shape=dataset.output_shapes[0] ), \
+    # layers.Dense(3,activation=tf.nn.relu,kernel_regularizer=keras.regularizers.l2(0.01)),\
     layers.Dense(3)])
 
     optimizer = tf.keras.optimizers.Adam()
@@ -42,7 +62,7 @@ def plot_history(history):
     plt.plot(hist['epoch'], hist['mean_absolute_error'],label='Train Error')
 
     plt.plot(hist['epoch'], hist['val_mean_absolute_error'],label = 'Val Error')
-    plt.ylim([0,5])
+    # plt.ylim([0,5])
     plt.legend()
 
     plt.figure()
@@ -50,7 +70,7 @@ def plot_history(history):
     plt.ylabel('Mean Square Error [$MPG^2$]')
     plt.plot(hist['epoch'], hist['mean_squared_error'],label='Train Error')
     plt.plot(hist['epoch'], hist['val_mean_squared_error'],label = 'Val Error')
-    plt.ylim([0,20])
+    # plt.ylim([0,20])
     plt.legend()
     plt.show()
 
@@ -67,7 +87,7 @@ def loadData(dir,filename,features=[],labels=[]):
     # in the directory, dir, determine how many *.npz files it contains
     path,dirs,files = next(os.walk(dir))
 
-    for numFile in range(len(files)):
+    for numFile in range(len(files)-1):
         with np.load(filename) as data:
             print('Loading Data from: ', filename, '\n')
             temp_features = data["features"] # inputs from given file
@@ -107,9 +127,9 @@ if __name__ == '__main__':
 
     # Setting up an empty dataset to load the data into
 
-    [dataset,features,labels] = loadData(data_directory,filename)
+    [dataset,features,labels] = loadData(dir,filename)
 
-    print(dataset.output_shapes[0])
+    # print(dataset.output_shapes[0])
 
 
 
@@ -118,9 +138,8 @@ if __name__ == '__main__':
     model.summary()
 
 
-    EPOCHS = 20
 
-    history = model.fit(features, labels, epochs=EPOCHS, \
+    history = model.fit(features, labels, epochs=epochs, \
     validation_split = 0.2, verbose=1,callbacks=[PrintDot()])
 
     plot_history(history)

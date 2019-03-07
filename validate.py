@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,6 +9,7 @@ from tensorflow.keras import layers
 import numpy as np
 import os
 from second_order import second_order
+from single_pendulum import pendulum
 
 
 
@@ -53,10 +56,16 @@ def loadData(dir,filename,features=[],labels=[]):
     # labels from all files loaded
     return [tf.data.Dataset.from_tensor_slices((features_placeholder, labels_placeholder)),features,labels]
 
+# Read the system properties from the readme.txt
+def determineSystemProps(dir):
+    # f = open(,'r')
+    pass
+
+
 
 def compare2model(ann,inputMag):
 
-    transferModel = second_order(2,1,input=inputMag)
+    transferModel = second_order(1,0.8,input=inputMag)
 
     ann_input = np.array([inputMag,0,0,0])
 
@@ -115,7 +124,7 @@ if __name__ == '__main__':
 # #
 #     plt.show()
 
-    [model_output, ann_output] = compare2model(model,-0.48)
+    [model_output, ann_output] = compare2model(model,0.8)
 
 
 

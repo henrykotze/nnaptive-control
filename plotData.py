@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from uav_model import drone
 import numpy as np
 import matplotlib.pyplot as plt

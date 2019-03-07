@@ -5,7 +5,7 @@ import numpy as np
 
 
 
-class second_order:
+class pendulum:
     def __init__(self,wn,zeta,time_step=0.001,input=0, ydotdot = 0, ydot = 0, y = 0):
         self.wn = wn
         self.zeta = zeta
@@ -15,11 +15,11 @@ class second_order:
         self.y = y
         self.t = 0
         self.dt = time_step
-        self.numStates=3
+        self.numStates = 3
 
 
     def update_ydotdot(self):
-        self.ydotdot = self.input - 2*self.zeta*self.wn*self.ydot - np.power((self.wn),2)*self.y
+        self.ydotdot = self.input - 2*self.zeta*self.wn*self.ydot - np.power((self.wn),2)*np.sin(self.y)
 
 
     def update_input(self,input):

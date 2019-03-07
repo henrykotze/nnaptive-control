@@ -1,70 +1,115 @@
-from uav_model import drone
+#!/usr/bin/env python3
+
+
+from second_order import second_order
 import numpy as np
 import scipy.integrate as spi
 import matplotlib.pyplot as plt
 import random as rand
+import argparse
+from single_pendulum import pendulum
 
 
-## Constants
 
-# pi
-PI = np.pi
-# Maximum thrust delivered
-thrust_MAX=30
+parser = argparse.ArgumentParser(\
+        prog='create data 2nd order',\
+        description='Creates .npz files of step responses with given damping ratio\
+                    frequency'
+        )
+
+
+parser.add_argument('-zeta', default = 1, help='the damping ratio the response, default: 1')
+parser.add_argument('-wn', default= 2, help='the natural frequency of the response, default: 2')
+parser.add_argument('-loc', default='./learning_data/', help='location to store responses, default: ./')
+parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-*')
+parser.add_argument('-t', default=1000, help='time lenght of responses, default: 1000ms')
+parser.add_argument('-numSim', default=2, help='number of responses to generate, default: 1')
+parser.add_argument('-inputMag', default=1, help='magnitude of input given to system, default: +-1')
+parser.add_argument('-system', default='pendulum', help='type of system to generate data, default: pendulum')
+parser.add_argument('-init', default=0, help='Initial Condition, default: 0')
+parser.add_argument('-rand', default=0, help='pick from normal distribution the input, default: 0')
+
+
+args = parser.parse_args()
+
+zeta=float(vars(args)['zeta'])
+wn=float(vars(args)['wn'])
+time=int(vars(args)['t'])
+numberSims = int(vars(args)['numSim'])
+dir = vars(args)['loc']
+filename = vars(args)['loc']+'/'+vars(args)['filename']
+inputMag = float(vars(args)['inputMag'])
+system = vars(args)['system']
+initial = float(vars(args)['init'])
+randomMag = int(vars(args)['rand'])
+
+
+# Add a Readme file in directory to show selected variables that describe the
+# responses
+info =  '*******************************'+'\n'+'INFORMATION'+'\n' \
+        + '*******************************'+'\n' \
+        + 'system: ' + str(system) + '\n' \
+        + 'wn: '+str(wn)+'\n' \
+        + 'zeta: '+str(zeta)+'\n'+'time: ' + str(time) + ' ms'+'\n' \
+        + 'initial condition: ' + str(initial) + '\n' \
+        + 'number of responses: ' + str(numberSims) + '\n' \
+        + 'input Magnitude: ' + str(inputMag) + '\n' \
+        + '*******************************'+'\n'+'TRAINING INFO'+'\n'\
+        + '*******************************'+'\n' \
+        + 'normalize_inputs: '+ str(inputMag) + '\n'
+
+# Write information to the readme file in the directory of the response
+f = open(str(dir + '/readme.txt'), 'w+')
+f.write(info)
+f.close()
+
+
+
+
+
+
+# filename = './test_data/response-0.npz'
+
+max_input=5
 # Minimum thrust delivered
-thrust_MIN=1
-# System Constants
-sys_constants = [1,1,1,1]
-# time of simulations
-time=1000
+min_input=-5
+
+init_condition_max = 0.5
+init_condition_min = -0.5
 
 
-# base filename
-filename = './learning_data/response-0.npz'
+def determine_system(system,wn,zeta,initial_condition):
+    if(system == 'pendulum'):
+        response = pendulum(wn,zeta,y=initial_condition*np.pi/180)
+    elif(system =='second'):
+        response = second_order(wn,zeta,y=initial_condition)
 
+    return response
 
-
-# Provides initial conditions to start simulations
-def init_conds():
-    theta = rand.uniform(-PI,PI)
-    phi = rand.uniform(-PI,PI)
-    psi = rand.uniform(-PI,PI)
-
-
-
-
-# Provides random inputs to drone
-def inputThrust():
-    thrust1 = rand.uniform(thrust_MIN,thrust_MAX)
-    thrust2 = rand.uniform(thrust_MIN,thrust_MAX)
-    thrust3 = rand.uniform(thrust_MIN,thrust_MAX)
-    thrust4 = rand.uniform(thrust_MIN,thrust_MAX)
-    return [thrust1,thrust2,thrust3,thrust4]
-
-# Writes the data to a file
-def writeData():
-    pass
 
 
 if __name__ == '__main__':
-
-    for numSim in range(0,100):
+    print('Creating the response of ', str(system))
+    print('Writing responses to:',system,'\n','zeta:',zeta,'\n','wn:', wn)
+    for numSim in range(0,numberSims):
         print('Number of simulation: ', numSim)
+        response = determine_system(system,wn,zeta,initial)
 
-        init_conditions = init_conds()
-        drone1 = drone(sys_constants,init_conditions)
-        drone1.setThrust(inputThrust())
+        if(randomMag == 0):
+            response.update_input(inputMag)
+        else:
+            response.update_input(np.random.uniform(-inputMag,inputMag))
 
 
-        input = np.zeros(22)
-        output = np.zeros(18)
+        input = np.zeros(4)
+        output = np.zeros(3)
 
 
         for t in range(0,time):
 
-            input = np.vstack( (input,drone1.getAllStates() ) )
-            drone1.step()
-            output = np.vstack( (output, drone1.getEstimatedStates() ) )
+            input = np.vstack( (input, response.getAllStates()))
+            response.step()
+            output = np.vstack( (output, response.getEstimatedStates() ) )
 
 
         # Saves response in *.npz file
