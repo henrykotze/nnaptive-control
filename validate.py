@@ -10,13 +10,36 @@ import numpy as np
 import os
 from second_order import second_order
 from single_pendulum import pendulum
+import argparse
+import pickle
 
 
+parser = argparse.ArgumentParser(\
+        prog='Validation of Trained Neural Network',\
+        description=''
+        )
 
 
+parser.add_argument('-loc', default='./test_data/', help='location of saved unseen data, default: ./test_data')
+parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-*')
+parser.add_argument('-mdl_loc', default='./learning_data', help='Location of saved model: ./learning_data')
+parser.add_argument('-mdl_name', default='nn_mdl', help='Name of saved model: nn_mdl')
+parser.add_argument('-inputMag', default=0.5, help='Step input size, default: 0.5')
+parser.add_argument('-init', default=0, help='Initial conditions, default = 0')
 
-filename = './test_data/response-0.npz'
-data_directory='./test_data/'
+args = parser.parse_args()
+dir = vars(args)['loc']
+filename = vars(args)['loc']+'/'+vars(args)['filename']
+mdl_name = str(vars(args)['mdl_name'])
+mdl_loc = str(vars(args)['mdl_loc'])
+inputMag = float(vars(args)['inputMag'])
+initial = float(vars(args)['init'])
+
+print('Fetching training info from: ', str(mdl_loc+'/training_info'))
+
+
+with open(str(mdl_loc+'/training_info'),'rb') as filen:
+    system,t,numberSims,initial,zeta,wn = pickle.load(filen)
 
 
 # Getting data
@@ -25,10 +48,7 @@ data_directory='./test_data/'
 # features: np.array that contains all features
 # labels: np.array that contians all labels
 def loadData(dir,filename,features=[],labels=[]):
-    # in the directory, dir, determine how many *.npz files it contains
-    path,dirs,files = next(os.walk(dir))
-
-    for numFile in range(len(files)):
+    for numFile in range(numberSims):
         with np.load(filename) as data:
             print('Loading Data from: ', filename)
             temp_features = data["features"] # inputs from given file
@@ -63,33 +83,27 @@ def determineSystemProps(dir):
 
 
 
-def compare2model(ann,inputMag):
+def compare2model(ann,input,system,time,wn,zeta):
 
-    transferModel = second_order(1,0.8,input=inputMag)
+    transferModel = 0
 
-    ann_input = np.array([inputMag,0,0,0])
+    if(system == 'pendulum'):
+        transferModel = pendulum(wn,zeta,input=input,y=initial)
+    elif(system == 'second'):
+        transferModel = second(wn,zeta,input=input,y=initial)
 
+    ann_input = np.array([input,0,0,0])
     ann_response = np.zeros(4)
     model_response = np.zeros(4)
 
 
     for t in range(0,8000):
-
-
         model_output = transferModel.getAllStates()
         ann_output = ann.predict(np.array([model_output]))
-
-
         ann_output = np.append(inputMag,ann_output)
         transferModel.step()
-
-
-
-
         model_response = np.vstack( (model_response, model_output ) )
         ann_response = np.vstack( ( ann_response, ann_output ) )
-
-
     return [model_response, ann_response]
 
 
@@ -97,7 +111,7 @@ if __name__ == '__main__':
 
     # Setting up an empty dataset to load the data into
 
-#     [dataset,test_features,test_labels] = loadData(data_directory,filename)
+#     [dataset,test_features,test_labels] = loadData(dir,filename)
 #
 #     # print(test_features[0])
 #
@@ -106,7 +120,8 @@ if __name__ == '__main__':
 #     # print(test_features[1])
 # #
 # #
-    model = keras.models.load_model('./trained_models/model_2nd_order')
+    print('./learning_data/nn_mdl')
+    model = keras.models.load_model('./learning_data/nn_mdl')
     # model.summary
 # #
 #     loss, mean_asb_error, meas_squared_error, acc = model.evaluate(test_features, test_labels)
@@ -124,7 +139,7 @@ if __name__ == '__main__':
 # #
 #     plt.show()
 
-    [model_output, ann_output] = compare2model(model,0.8)
+    [model_output, ann_output] = compare2model(model,inputMag,t,wn,zeta)
 
 
 

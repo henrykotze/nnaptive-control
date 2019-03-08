@@ -10,8 +10,7 @@ from tensorflow.keras import layers
 import numpy as np
 import os
 import argparse
-
-
+import pickle
 
 parser = argparse.ArgumentParser(\
         prog='Trains the Neural Network ',\
@@ -19,17 +18,30 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-loc', default='./learning_data/', help='location of stored responses, default: ./')
+parser.add_argument('-loc', default='./learning_data/', help='location of stored responses, default: ./learning_data/')
 parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-*')
 parser.add_argument('-epochs', default=1, help='Number of Epochs, default: 1')
+parser.add_argument('-mdl_loc', default='./learning_data', help='Location to save model: ./learning_data')
+parser.add_argument('-mdl_name', default='nn_mdl', help='Name of model, default: nn_mdl')
+parser.add_argument('-reg_w', default='0', help='Regularization of weight, default: 0')
+parser.add_argument('-lr', default='0', help='learning rate, default: 0')
+
+
+
 
 
 args = parser.parse_args()
 dir = vars(args)['loc']
 filename = vars(args)['loc']+'/'+vars(args)['filename']
 epochs = int(vars(args)['epochs'])
+mdl_name = str(vars(args)['mdl_name'])
+mdl_loc = str(vars(args)['mdl_loc'])
+weight_reg = float(vars(args)['reg_w'])
+learning_rate = float(vars(args)['lr'])
 
 
+with open(str(dir+'/training_info'),'rb') as filen:
+    system,t,numberSims,initial,zeta,wn = pickle.load(filen)
 # Base name for data files:
 # filename='./learning_data/response-0.npz'
 # data_directory='./learning_data/'
@@ -39,11 +51,12 @@ def build_model(dataset):
 
     model = keras.Sequential([
     # layers.Flatten(input_shape=(4,)),\
-    layers.Dense(4, activation=tf.nn.relu,input_shape=dataset.output_shapes[0] ), \
-    # layers.Dense(3,activation=tf.nn.relu,kernel_regularizer=keras.regularizers.l2(0.01)),\
-    layers.Dense(3)])
+    layers.Dense(4,kernel_regularizer=keras.regularizers.l2(weight_reg), activation=tf.nn.leaky_relu,input_shape=dataset.output_shapes[0] ), \
+    # layers.Dense(3,activation=tf.nn.relu,kernel_regularizer=keras.regularizers.l1(weight_reg)),\
+    # layers.Dropout(0.5),\
+    layers.Dense(3,kernel_regularizer=keras.regularizers.l2(weight_reg))])
 
-    optimizer = tf.keras.optimizers.Adam()
+    optimizer = tf.keras.optimizers.Adam(lr=learning_rate)
 
     model.compile(loss='mean_squared_error',    \
                     optimizer=optimizer,        \
@@ -87,7 +100,7 @@ def loadData(dir,filename,features=[],labels=[]):
     # in the directory, dir, determine how many *.npz files it contains
     path,dirs,files = next(os.walk(dir))
 
-    for numFile in range(len(files)-1):
+    for numFile in range(numberSims):
         with np.load(filename) as data:
             print('Loading Data from: ', filename, '\n')
             temp_features = data["features"] # inputs from given file
@@ -137,12 +150,30 @@ if __name__ == '__main__':
 
     model.summary()
 
-
+    info =  '*******************************'+'\n'+'MODEL INFORMATION'+'\n' \
+            + '*******************************'+'\n' \
+            + 'system: ' + system + '\n' \
+            + 'number of epochs: ' + str(epochs) + '\n'  \
+            + 'model name: ' + mdl_name + '\n' \
+            + 'model location: '  + mdl_loc + '\n' \
+            + 'weight regularization: ' + str(weight_reg) + '\n' \
+            + 'learning rate: ' + str(learning_rate) + '\n' \
+            + '*******************************'+'\n'
+    print(info)
 
     history = model.fit(features, labels, epochs=epochs, \
-    validation_split = 0.2, verbose=1,callbacks=[PrintDot()])
+    validation_split = 0.2, verbose=1)
 
     plot_history(history)
 
     print('\n Model Saved')
-    model.save('./my_model_h5')
+    model.save(mdl_loc+'/'+mdl_name)
+    f_train = open(dir+'/readme.txt')
+    training_info = f_train.read()
+    f = open(str(mdl_loc + 'mdl_name'+'_readme.txt'), 'w+')
+    f.write(info)
+    f.write(training_info)
+    f.close()
+    f_train.close()
+
+    print(info)

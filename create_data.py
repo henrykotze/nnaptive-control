@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import random as rand
 import argparse
 from single_pendulum import pendulum
-
+import os
+import pickle
 
 
 parser = argparse.ArgumentParser(\
@@ -20,8 +21,8 @@ parser = argparse.ArgumentParser(\
 
 parser.add_argument('-zeta', default = 1, help='the damping ratio the response, default: 1')
 parser.add_argument('-wn', default= 2, help='the natural frequency of the response, default: 2')
-parser.add_argument('-loc', default='./learning_data/', help='location to store responses, default: ./')
-parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-*')
+parser.add_argument('-loc', default='./learning_data/', help='location to store responses, default: ./learning_data')
+parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-0.npz')
 parser.add_argument('-t', default=1000, help='time lenght of responses, default: 1000ms')
 parser.add_argument('-numSim', default=2, help='number of responses to generate, default: 1')
 parser.add_argument('-inputMag', default=1, help='magnitude of input given to system, default: +-1')
@@ -46,7 +47,7 @@ randomMag = int(vars(args)['rand'])
 
 # Add a Readme file in directory to show selected variables that describe the
 # responses
-info =  '*******************************'+'\n'+'INFORMATION'+'\n' \
+info =  '*******************************'+'\n'+'TRAINING INFORMATION'+'\n' \
         + '*******************************'+'\n' \
         + 'system: ' + str(system) + '\n' \
         + 'wn: '+str(wn)+'\n' \
@@ -54,11 +55,19 @@ info =  '*******************************'+'\n'+'INFORMATION'+'\n' \
         + 'initial condition: ' + str(initial) + '\n' \
         + 'number of responses: ' + str(numberSims) + '\n' \
         + 'input Magnitude: ' + str(inputMag) + '\n' \
-        + '*******************************'+'\n'+'TRAINING INFO'+'\n'\
+        + 'random inputs: ' + str(randomMag) + '\n' \
+        + '*******************************'+'\n'+'INPUT DATA'+'\n'\
         + '*******************************'+'\n' \
-        + 'normalize_inputs: '+ str(inputMag) + '\n'
+        + 'normalize_inputs: '+ str(inputMag) + '\n' \
+        + '*******************************'+'\n' \
 
 # Write information to the readme file in the directory of the response
+
+with open(str(dir + '/training_info'),'wb+') as filen:
+    print('Saving training info to')
+    pickle.dump([system,time,numberSims,initial,zeta,wn],filen)
+filen.close()
+
 f = open(str(dir + '/readme.txt'), 'w+')
 f.write(info)
 f.close()
@@ -70,12 +79,7 @@ f.close()
 
 # filename = './test_data/response-0.npz'
 
-max_input=5
-# Minimum thrust delivered
-min_input=-5
 
-init_condition_max = 0.5
-init_condition_min = -0.5
 
 
 def determine_system(system,wn,zeta,initial_condition):
