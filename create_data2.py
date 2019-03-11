@@ -64,37 +64,53 @@ def determine_system(system,wn,zeta,initial_condition):
     return response
 
 
+def partitionResponse(response,N,time):
+
+    input = np.zeros( ( int(time/N),N ) )
+
+    for t in range(0,time):
+        for n in range(0,N):
+            input[t,n] = response[t+n]
+
+
+
+
+
 
 if __name__ == '__main__':
     print('Creating the response of ', str(system))
     print('Writing responses to:',system,'\n','zeta:',zeta,'\n','wn:', wn)
 
+    startInputTime = 10
+    N = 5
+    time = 15
+    numberSims = 1
 
-
+    input = zeros( (int(time/N),N) )
     for numSim in range(0,numberSims):
 
         print('Number of simulation: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
-        if(randomMag == 0):
-            response.update_input(inputMag)
-        else:
-            response.update_input(np.random.uniform(-inputMag,inputMag))
+        # if(randomMag == 0):
+        #     response.update_input(inputMag)
+        # else:
+        #     response.update_input(np.random.uniform(-inputMag,inputMag))
 
 
-        input = np.zeros(4)
-        output = np.zeros(3)
+        input = np.zeros(N+1)
 
-
-        for t in range(0,time):
-
-            input = np.vstack( (input, response.getAllStates()))
-            response.step()
-            output = np.vstack( (output, response.getEstimatedStates() ) )
+        # for t in range(0,time):
+        #     if(t == startInputTime):
+        #         response.update_input(inputMag)
+        #
+        #     for i in range(N):
+        #
+        #         response.step()
 
 
         # Saves response in *.npz file
-        np.savez_compressed(filename,features=input,labels=output)
+        # np.savez(filename,features=input,labels=output)
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 
-import pandas as pd
-import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 from second_order import second_order
@@ -13,6 +13,15 @@ from single_pendulum import pendulum
 import argparse
 import pickle
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+import numpy as np
+import os
+import argparse
+import pickle
 
 parser = argparse.ArgumentParser(\
         prog='Validation of Trained Neural Network',\
@@ -39,7 +48,7 @@ print('Fetching training info from: ', str(mdl_loc+'/training_info'))
 
 
 with open(str(mdl_loc+'/training_info'),'rb') as filen:
-    system,t,numberSims,initial,zeta,wn = pickle.load(filen)
+    system,t,numberSims,initial,zeta,wn,numberSims,randomMag,inputRange= pickle.load(filen)
 
 
 # Getting data
@@ -76,10 +85,6 @@ def loadData(dir,filename,features=[],labels=[]):
     # labels from all files loaded
     return [tf.data.Dataset.from_tensor_slices((features_placeholder, labels_placeholder)),features,labels]
 
-# Read the system properties from the readme.txt
-def determineSystemProps(dir):
-    # f = open(,'r')
-    pass
 
 
 
@@ -97,7 +102,7 @@ def compare2model(ann,input,system,time,wn,zeta):
     model_response = np.zeros(4)
 
 
-    for t in range(0,8000):
+    for t in range(0,time):
         model_output = transferModel.getAllStates()
         ann_output = ann.predict(np.array([model_output]))
         ann_output = np.append(inputMag,ann_output)
@@ -120,8 +125,8 @@ if __name__ == '__main__':
 #     # print(test_features[1])
 # #
 # #
-    print('./learning_data/nn_mdl')
-    model = keras.models.load_model('./learning_data/nn_mdl')
+    print('loading model from: ', str(mdl_loc+'/'+mdl_name))
+    model = keras.models.load_model(str(mdl_loc+'/'+mdl_name))
     # model.summary
 # #
 #     loss, mean_asb_error, meas_squared_error, acc = model.evaluate(test_features, test_labels)
@@ -139,7 +144,8 @@ if __name__ == '__main__':
 # #
 #     plt.show()
 
-    [model_output, ann_output] = compare2model(model,inputMag,t,wn,zeta)
+    print('Using model saved at: ', str(mdl_loc+'/'+mdl_name))
+    [model_output, ann_output] = compare2model(model,inputMag,system,t,wn,zeta)
 
 
 

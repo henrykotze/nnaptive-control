@@ -41,9 +41,8 @@ class pendulum:
     def step(self):
         self.update_ydotdot()
 
-
         self.ydot += self.integration(self.ydotdot)[0]
-        self.y += self.integration(self.ydot)[0]
+        self.y += self.integration(self.ydot)[0]+ np.random.uniform(-0.0001,0.0001)
 
         self.t += self.dt
 
