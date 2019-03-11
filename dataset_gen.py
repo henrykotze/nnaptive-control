@@ -65,36 +65,18 @@ def determine_system(system,wn,zeta,initial_condition):
 
 
 
+
 if __name__ == '__main__':
-    print('Creating the response of ', str(system))
-    print('Writing responses to:',system,'\n','zeta:',zeta,'\n','wn:', wn)
 
+    startInputTime = 10
+    N = 5
+    time = 15
+    inputTime = 0   # time at which the input is active
 
+    input = np.zeros( (time,N) )
+    output = np.zeros((1,time))
 
-    for numSim in range(0,numberSims):
-
-        print('Number of simulation: ', numSim)
-        response = determine_system(system,wn,zeta,initial)
-
-        if(randomMag == 0):
-            response.update_input(inputMag)
-        else:
-            response.update_input(np.random.uniform(-inputMag,inputMag))
-
-
-        input = np.zeros(4)
-        output = np.zeros(3)
-
-
-        for t in range(0,time):
-
-            input = np.vstack( (input, response.getAllStates()))
-            response.step()
-            output = np.vstack( (output, response.getEstimatedStates() ) )
-
-
-        # Saves response in *.npz file
-        np.savez_compressed(filename,features=input,labels=output)
-
-        # Change number on filename to correspond to simulation number
-        filename = filename.replace(str(numSim),str(numSim+1))
+    for step in range(0,time):
+        output[1,step] = response_y[step]
+        for n in range(0,N):
+            input[step,n] = response_y[N-n+step]
