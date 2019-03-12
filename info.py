@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-loc', default='./learning_data/training_info', help='location of file, default: ./learning_data/training_info')
+parser.add_argument('-loc', default='./train_data/training_info', help='location of file, default: ./learning_data/training_info')
 parser.add_argument('-type', default='train_data', help='information about specific type, ie: model or data')
 
 
@@ -27,7 +27,7 @@ if( type == 'train_data'):
 
 
     with open(str(dir),'rb') as filen:
-        system,time,numberSims,initial,zeta,wn,numberSims,randomMag,inputMag = pickle.load(filen)
+        system,time,numberSims,initial,zeta,wn,numberSims,randomMag,inputMag,inputTime = pickle.load(filen)
 
     info =  '--------------------------------'+'\n'+'TRAINING DATA INFORMATION'+'\n' \
             + '--------------------------------'+'\n' \
@@ -38,6 +38,7 @@ if( type == 'train_data'):
             + 'number of responses: ' + str(numberSims) + '\n' \
             + 'input Magnitude: ' + str(inputMag) + '\n' \
             + 'random inputs: ' + str(randomMag) + '\n' \
+            + 'start time of input: ' + str(inputTime) + ' ms' '\n' \
             + '--------------------------------'+'\n'
 
     print(info)

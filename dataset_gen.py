@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
 from second_order import second_order
 import numpy as np
 import scipy.integrate as spi
@@ -19,64 +22,81 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-zeta', default = 1, help='the damping ratio the response, default: 1')
-parser.add_argument('-wn', default= 2, help='the natural frequency of the response, default: 2')
-parser.add_argument('-loc', default='./learning_data/', help='location to store responses, default: ./learning_data')
+parser.add_argument('-loc', default='./train_data/', help='location to store responses, default: ./learning_data')
 parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-0.npz')
-parser.add_argument('-t', default=1000, help='time lenght of responses, default: 1000ms')
-parser.add_argument('-numSim', default=2, help='number of responses to generate, default: 1')
-parser.add_argument('-inputMag', default=1, help='magnitude of input given to system, default: +-1')
 parser.add_argument('-system', default='pendulum', help='type of system to generate data, default: pendulum')
-parser.add_argument('-init', default=0, help='Initial Condition, default: 0')
-parser.add_argument('-rand', default=0, help='pick from normal distribution the input, default: 0')
 
 
 args = parser.parse_args()
 
-zeta=float(vars(args)['zeta'])
-wn=float(vars(args)['wn'])
-time=int(vars(args)['t'])
-numberSims = int(vars(args)['numSim'])
 dir = vars(args)['loc']
 filename = vars(args)['loc']+'/'+vars(args)['filename']
-inputMag = float(vars(args)['inputMag'])
 system = vars(args)['system']
-initial = float(vars(args)['init'])
-randomMag = int(vars(args)['rand'])
 
 
 # Add a Readme file in directory to show selected variables that describe the
 # responses
 
+print('----------------------------------------------------------------')
+print('Fetching training info from: ', str(dir+'/training_info'))
+print('----------------------------------------------------------------')
 
-# Write information to the readme file in the directory of the response
-with open(str(dir + '/training_info'),'wb+') as filen:
-    print('Saving training info to')
-    pickle.dump([system,time,numberSims,initial,zeta,wn,numberSims,randomMag,inputMag],filen)
-filen.close()
+with open(str(dir+'/training_info'),'rb') as filen:
+    system,t,numberSims,initial,zeta,wn,numberSims,randomMag,inputRange,inputTime= pickle.load(filen)
 
-def determine_system(system,wn,zeta,initial_condition):
-    if(system == 'pendulum'):
-        response = pendulum(wn,zeta,y=initial_condition*np.pi/180)
-    elif(system =='second'):
-        response = second_order(wn,zeta,y=initial_condition)
-
-    return response
+os.system("./info.py -loc="+str(dir+'/training_info'))
 
 
+# def loadData(dir,filename,features=[],labels=[]):
+    # in the directory, dir, determine how many *.npz files it contains
 
 
 if __name__ == '__main__':
 
-    startInputTime = 10
-    N = 5
-    time = 15
-    inputTime = 0   # time at which the input is active
+    N = 4
+    # Pre-creating correct sizes of arrays
+    features = np.zeros( (t*numberSims,N) )
+    labels = np.zeros( (t*numberSims,1) )
 
-    input = np.zeros( (time,N) )
-    output = np.zeros((1,time))
 
-    for step in range(0,time):
-        output[1,step] = response_y[step]
-        for n in range(0,N):
-            input[step,n] = response_y[N-n+step]
+    for numFile in range(numberSims):
+        with np.load(filename) as data:
+            print('Loading Data from: ', filename, '\n')
+
+            response_y = data['y_'] # inputs from given file
+            input = data['input']
+
+            for step in range(0,t-N):
+                labels[step+t*numFile] = response_y[step]
+                for n in range(0,N):
+                    features[step+t*numFile,n] = response_y[N-n+step]
+
+            # to ensure array size is correct when stacking them
+            # if(numFile == 0):
+            #     features = temp_features
+            #     labels = temp_labels
+            # else: # stack all files features and labels on top of eachother
+            #     features = np.vstack( ( features, temp_features ) )
+            #     labels = np.vstack( ( labels, temp_labels ) )
+
+            # fetch next name of *.npz file to be loaded
+            filename = filename.replace(str(numFile),str(numFile+1))
+
+
+    # each row of `features` corresponds to the same row as `labels`.
+    assert features.shape[0] == labels.shape[0]
+    features_placeholder = tf.placeholder(features.dtype, features.shape)
+    labels_placeholder = tf.placeholder(labels.dtype, labels.shape)
+
+    print(features_placeholder)
+    print(labels_placeholder)
+
+    # returns:
+    # dataset with correct size and type to match the features and labels
+    # features from all files loaded
+    # labels from all files loaded
+    dataset = [tf.data.Dataset.from_tensor_slices((features_placeholder, labels_placeholder)),features,labels]
+
+
+
+    #

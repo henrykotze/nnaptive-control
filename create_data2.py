@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(\
 
 parser.add_argument('-zeta', default = 1, help='the damping ratio the response, default: 1')
 parser.add_argument('-wn', default= 2, help='the natural frequency of the response, default: 2')
-parser.add_argument('-loc', default='./learning_data/', help='location to store responses, default: ./learning_data')
+parser.add_argument('-loc', default='./train_data/', help='location to store responses, default: ./train_data')
 parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-0.npz')
 parser.add_argument('-t', default=1000, help='time lenght of responses, default: 1000ms')
 parser.add_argument('-numSim', default=2, help='number of responses to generate, default: 1')
@@ -29,7 +29,7 @@ parser.add_argument('-inputMag', default=1, help='magnitude of input given to sy
 parser.add_argument('-system', default='pendulum', help='type of system to generate data, default: pendulum')
 parser.add_argument('-init', default=0, help='Initial Condition, default: 0')
 parser.add_argument('-rand', default=0, help='pick from normal distribution the input, default: 0')
-parser.add_argument('-inputT', default=50, help='time when input starts, default: 50ms')
+parser.add_argument('-inputTime', default=50, help='time at which inputs starts, default: 50ms')
 
 
 args = parser.parse_args()
@@ -44,7 +44,7 @@ inputMag = float(vars(args)['inputMag'])
 system = vars(args)['system']
 initial = float(vars(args)['init'])
 randomMag = int(vars(args)['rand'])
-inputTime = int(vars(args)['inputT'])
+inputTime = int(vars(args)['inputTime'])
 
 
 # Add a Readme file in directory to show selected variables that describe the
@@ -67,40 +67,47 @@ def determine_system(system,wn,zeta,initial_condition):
 
 
 
+
 if __name__ == '__main__':
     print('Creating the response of ', str(system))
+    print('Writing responses to:',system,'\n','zeta:',zeta,'\n','wn:', wn)
+
 
     for numSim in range(0,numberSims):
-
         print('Number of simulation: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
-        # creating arrays to store responses
-        input = np.zeros( (1, time) )
-        y = np.zeros( (1, time) )
-        ydot = np.zeros( (1, time) )
-        ydotdot = np.zeros( (1, time) )
+        # if(randomMag == 0):
+        #     response.update_input(inputMag)
+        # else:
+        #     response.update_input(np.random.uniform(-inputMag,inputMag))
 
+        input = np.zeros( (time,1) )
+        y = np.zeros( (time,1) )
+        ydot = np.zeros( (time,1) )
+        ydotdot = np.zeros( (time,1) )
 
         for t in range(0,time):
-            # Time to start input to system
+            # time at which input starts
             if(t == inputTime):
-                # Random step size for each response
-                if(randomMag == 0):
+                if(rand == 0):
                     response.update_input(inputMag)
                 else:
                     response.update_input(np.random.uniform(-inputMag,inputMag))
 
-            # Temporary variables to store state of system
+            # temporary variables
             t1,t2,t3,t4 = response.getAllStates()
-            input[1,t] = t1
-            y[1,t] = t2
-            ydot[1,t] = t3
-            ydotdot[1,t] = t4
+            input[t] = t1
+            y[t] = t2
+            ydot[t] = t3
+            ydotdot[t] = t4
+
+            # next time step
             response.step()
 
 
         # Saves response in *.npz file
-        np.savez_compressed(filename,input=input,y=y,y_dot=ydot,y_dotdot=ydotdot)
+        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot)
+
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))
