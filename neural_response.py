@@ -25,7 +25,7 @@ parser.add_argument('-filename', default="response-0.npz", help='filename, defau
 parser.add_argument('-Nt', default=5, help='number of previous output timesteps used, default: 5')
 parser.add_argument('-Ni', default=5, help='number of previous input timesteps used, default: 5')
 parser.add_argument('-n', default='0', help='number of response to plot: 0')
-parser.add_argument('-mdl_loc', default='./', help='Location to save model: ./learning_data')
+parser.add_argument('-mdl_loc', default='./trained_models/', help='Location to save model: ./trained_models')
 parser.add_argument('-mdl_name', default='nn_mdl', help='Name of model, default: nn_mdl')
 
 
@@ -41,24 +41,28 @@ mdl_loc = str(vars(args)['mdl_loc'])
 
 
 # Get information regarding chosen response
-with open(str(loc+'/readme'),'rb') as filen:
+with open(str(dir+'/readme'),'rb') as filen:
     system,t,numberSims,initial,zeta,wn,numberSims,randomMag,inputRange,inputTime= pickle.load(filen)
 
 
-os.system("./info.py -loc="+str(dir+'/readme'))
+# os.system("./info.py -loc="+str(dir+'/readme'))
 
 
 # Still need to get data regarding dataset: Ni Nt
 
-
-filename = filename.replace(str('0',str(n))
+N_t = 5
+N_i = 5
+t=80
+filename = filename.replace( str(0), str(n)  )
 
 def getFeaturesAndResponse(filename,N_t,N_i):
     # Load Data from created response
 
     features = np.zeros( (t,N_t+N_i) )   # +1 is for the input
     with np.load(filename) as data:
+        print('----------------------------------------------------------------')
         print('Loading Data from: ', filename)
+        print('----------------------------------------------------------------')
 
         data = np.load(filename)
 
@@ -70,22 +74,21 @@ def getFeaturesAndResponse(filename,N_t,N_i):
         response_ydot = data['y_dot'] # inputs from given file
         input = data['input']
 
-        for step in range( np.maximum(N_t,N_i), t- np.maximum(N_t,N_i) ):
+        for step in range( np.maximum(N_t,N_i), t - np.maximum(N_t,N_i) ):
             for n in range(0,N_i):
-                features[step+t*numFile,n] = input[step-n]
+                features[step,n] = input[step-n]
             for n in range(0,N_t):
-                features[step+t*numFile,N_i+n] = y[step-n]
+                features[step,N_i+n] = y[step-n]
 
     return [features,y,ydot,ydotdot,input]
 
 
-def getResponseFromNN(model,features,steps,N_t,N_i):
+def getResponseFromNN(model,features,timesteps,Nt,Ni):
 
-    predictions = np.zeros( (steps - np.maximum(N_t,N_i),1) )
-    for t_steps in range( np.maximum(N_t,N_i), steps - np.maximum(N_t,N_i) ):
-        predictions[t_steps] = model.predict(features[t_steps,:])
+    predictions = np.zeros( (timesteps - np.maximum(Nt,Ni),1) )
 
-
+    for t_steps in range( np.maximum(Nt,Ni), timesteps - np.maximum(Nt,Ni) ):
+        predictions[t_steps] = model.predict( np.array( [features[t_steps,:] ]) )
     return predictions
 
 
@@ -94,9 +97,13 @@ if __name__ == '__main__':
 
 
     [features,y,ydot,ydotdot,input] = getFeaturesAndResponse(filename,N_t=N_t,N_i=N_i)
-    print('loading model from: ', str(mdl_loc+'/'+mdl_name))
+
+    print('----------------------------------------------------------------')
+    print('Loading Model from: ', str(mdl_loc+'/'+mdl_name))
+    print('----------------------------------------------------------------')
+
     model = keras.models.load_model(str(mdl_loc+'/'+mdl_name))
-    predictions = getFeaturesAndResponse(filename,N_t=N_t,N_i=N_i)
+    predictions = getResponseFromNN(model,features,t, N_t, N_i)
 
 
 
@@ -105,12 +112,11 @@ if __name__ == '__main__':
     plt.rc('font', family='serif')
     plt.rc('font', size=12)
 
+
     plt.figure(1)
     plt.plot(input,'-', mew=1, ms=8,mec='w')
     plt.plot(y,'-', mew=1, ms=8,mec='w')
     plt.plot(predictions,'-', mew=1, ms=8,mec='w')
-    plt.legend(['$input$','$y$', '$\hat y'])
+    plt.legend(['input','$y$', '$\hat y$'])
     plt.grid()
-
-
     plt.show()
