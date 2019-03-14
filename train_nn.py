@@ -24,13 +24,13 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-dataset', default='./', help='location of stored dataset, default: ./')
+parser.add_argument('-dataset', default='./datasets/', help='location of stored dataset, default: ./datasets')
 parser.add_argument('-epochs', default=1, help='Number of Epochs, default: 1')
 parser.add_argument('-mdl_loc', default='./', help='Location to save model: ./learning_data')
 parser.add_argument('-mdl_name', default='nn_mdl', help='Name of model, default: nn_mdl')
 parser.add_argument('-reg_w', default='0', help='Regularization of weight, default: 0')
 parser.add_argument('-lr', default='0', help='learning rate, default: 0')
-parser.add_argument('-valset', default='./', help='location of validation set, default: ./')
+parser.add_argument('-valset', default='./datasets/', help='location of validation set, default: ./datasets')
 
 
 

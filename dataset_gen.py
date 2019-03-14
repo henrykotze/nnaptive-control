@@ -29,6 +29,7 @@ parser.add_argument('-Nt', default=5, help='number of previous output timesteps 
 parser.add_argument('-Ni', default=5, help='number of previous input timesteps used, default: 5')
 parser.add_argument('-numSim', default=0, help='number of responses to add, default: all')
 parser.add_argument('-name', default='dataset0', help='name of your dataset, default: dataset*')
+parser.add_argument('-data_loc', default='./datasets/', help='location to store dataset: ./datasets/')
 
 
 args = parser.parse_args()
@@ -40,6 +41,7 @@ N_t = int(vars(args)['Nt'])
 N_i = int(vars(args)['Ni'])
 numSim = int(vars(args)['numSim'])
 nameOfDataset = str(vars(args)['name'])
+dataset_loc = str(vars(args)['data_loc'])
 
 # Add a Readme file in directory to show selected variables that describe the
 # responses
@@ -90,7 +92,7 @@ if __name__ == '__main__':
             filename = filename.replace(str(numFile),str(numFile+1))
 
 
-    with open(str('./'+nameOfDataset),'wb+') as filen:
+    with open(dataset_loc + '/'+nameOfDataset,'wb+') as filen:
 
         print('\n-----------------------------------------')
         print('Saving features and labels to:', nameOfDataset)
