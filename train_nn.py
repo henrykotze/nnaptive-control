@@ -26,11 +26,13 @@ parser = argparse.ArgumentParser(\
 
 parser.add_argument('-dataset', default='./datasets/', help='location of stored dataset, default: ./datasets')
 parser.add_argument('-epochs', default=1, help='Number of Epochs, default: 1')
-parser.add_argument('-mdl_loc', default='./', help='Location to save model: ./learning_data')
+parser.add_argument('-mdl_loc', default='./', help='Location to save model: ./')
 parser.add_argument('-mdl_name', default='nn_mdl', help='Name of model, default: nn_mdl')
 parser.add_argument('-reg_w', default='0', help='Regularization of weight, default: 0')
 parser.add_argument('-lr', default='0', help='learning rate, default: 0')
 parser.add_argument('-valset', default='./datasets/', help='location of validation set, default: ./datasets')
+parser.add_argument('-name_train', default='dataset', help='Name Of Training Datasets: ')
+parser.add_argument('-name_val', default='validation_data', help='Name Of Validation Datasets: ')
 
 
 
@@ -45,9 +47,12 @@ mdl_loc = str(vars(args)['mdl_loc'])
 weight_reg = float(vars(args)['reg_w'])
 learning_rate = float(vars(args)['lr'])
 validation_dir = vars(args)['valset']
+training_dataset = vars(args)['name_train']
+validation_dataset = vars(args)['name_val']
 
-dataset_path = dir + '/dataset0'
-validation_path = validation_dir + '/validation_data'
+
+dataset_path = dir + '/' + training_dataset
+validation_path = validation_dir + '/' + validation_dataset
 # Base name for data files:
 # filename='./learning_data/response-0.npz'
 # data_directory='./learning_data/'

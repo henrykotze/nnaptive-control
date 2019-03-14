@@ -94,9 +94,9 @@ if __name__ == '__main__':
 
     with open(dataset_loc + '/'+nameOfDataset,'wb+') as filen:
 
-        print('\n-----------------------------------------')
+        print('\n--------------------------------------------------------------')
         print('Saving features and labels to:', nameOfDataset)
-        print('-----------------------------------------')
+        print('\n--------------------------------------------------------------')
 
         pickle.dump([features,labels],filen)
 
