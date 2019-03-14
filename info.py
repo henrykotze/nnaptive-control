@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-loc', default='./train_data/training_info', help='location of file, default: ./learning_data/training_info')
+parser.add_argument('-loc', default='./train_data/readme', help='location of file, default: ./learning_data/training_info')
 parser.add_argument('-type', default='train_data', help='information about specific type, ie: model or data')
 
 

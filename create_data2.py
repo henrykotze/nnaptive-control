@@ -30,6 +30,10 @@ parser.add_argument('-system', default='pendulum', help='type of system to gener
 parser.add_argument('-init', default=0, help='Initial Condition, default: 0')
 parser.add_argument('-rand', default=0, help='pick from normal distribution the input, default: 0')
 parser.add_argument('-inputTime', default=50, help='time at which inputs starts, default: 50ms')
+parser.add_argument('-startNumSim', default=0, help='to start the response-* different then 0, default: 0')
+parser.add_argument('-timeSteps', default=0.01, help='timestep increments of responses, default: 0.01')
+parser.add_argument('-maxInput', default=0.5, help='maximum input given to system')
+parser.add_argument('-minInput', default=-0.5, help='minimum input given to system')
 
 
 args = parser.parse_args()
@@ -38,28 +42,32 @@ zeta=float(vars(args)['zeta'])
 wn=float(vars(args)['wn'])
 time=int(vars(args)['t'])
 numberSims = int(vars(args)['numSim'])
+startSimNum = int(vars(args)['startNumSim'])
 dir = vars(args)['loc']
 filename = vars(args)['loc']+'/'+vars(args)['filename']
-inputMag = float(vars(args)['inputMag'])
 system = vars(args)['system']
 initial = float(vars(args)['init'])
 randomMag = int(vars(args)['rand'])
 inputTime = int(vars(args)['inputTime'])
-
+timeStep = float(vars(args)['timeSteps'])
+inputMag = float(vars(args)['inputMag'])
+maxInput = float(vars(args)['maxInput'])
+minInput = float(vars(args)['minInput'])
 
 # Add a Readme file in directory to show selected variables that describe the
 # responses
 
+filename = filename.replace(str(0),str(startSimNum))
 
 # Write information to the readme file in the directory of the response
-with open(str(dir + '/training_info'),'wb+') as filen:
+with open(str(dir + '/readme'),'wb+') as filen:
     print('Saving training info to')
-    pickle.dump([system,time,numberSims,initial,zeta,wn,numberSims,randomMag,inputMag,inputTime],filen)
+    pickle.dump([system,time,numberSims,initial,zeta,wn,(numberSims+startSimNum),randomMag,inputMag,inputTime],filen)
 filen.close()
 
 def determine_system(system,wn,zeta,initial_condition):
     if(system == 'pendulum'):
-        response = pendulum(wn,zeta,y=initial_condition*np.pi/180)
+        response = pendulum(wn,zeta,y=initial_condition*np.pi/180,time_step=timeStep)
     elif(system =='second'):
         response = second_order(wn,zeta,y=initial_condition)
 
@@ -70,10 +78,10 @@ def determine_system(system,wn,zeta,initial_condition):
 
 if __name__ == '__main__':
     print('Creating the response of ', str(system))
-    print('Writing responses to:',system,'\n','zeta:',zeta,'\n','wn:', wn)
+    print('Writing responses to:', filename )
 
 
-    for numSim in range(0,numberSims):
+    for numSim in range(startSimNum,startSimNum+numberSims):
         print('Number of simulation: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
@@ -90,17 +98,17 @@ if __name__ == '__main__':
         for t in range(0,time):
             # time at which input starts
             if(t == inputTime):
-                if(rand == 0):
+                if(randomMag == 0):
                     response.update_input(inputMag)
                 else:
-                    response.update_input(np.random.uniform(-inputMag,inputMag))
+                    response.update_input(np.random.uniform(minInput,maxInput))
 
             # temporary variables
             t1,t2,t3,t4 = response.getAllStates()
             input[t] = t1
-            y[t] = t2
+            y[t] = t4
             ydot[t] = t3
-            ydotdot[t] = t4
+            ydotdot[t] = t2
 
             # next time step
             response.step()
