@@ -62,7 +62,7 @@ filename = filename.replace(str(0),str(startSimNum))
 # Write information to the readme file in the directory of the response
 with open(str(dir + '/readme'),'wb+') as filen:
     print('Saving training info to')
-    pickle.dump([system,time,numberSims,initial,zeta,wn,(numberSims+startSimNum),randomMag,inputMag,inputTime],filen)
+    pickle.dump([system,time,(numberSims+startSimNum),initial,zeta,wn,randomMag,inputMag,inputTime],filen)
 filen.close()
 
 def determine_system(system,wn,zeta,initial_condition):

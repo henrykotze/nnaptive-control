@@ -51,7 +51,7 @@ print('Fetching training info from: ', str(dir+'/training_info'))
 print('----------------------------------------------------------------')
 
 with open(str(dir+'/readme'),'rb') as filen:
-    system,t,numberSims,initial,zeta,wn,numberSims,randomMag,inputRange,inputTime= pickle.load(filen)
+    system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime= pickle.load(filen)
 
 os.system("./info.py -loc="+str(dir+'/readme'))
 
