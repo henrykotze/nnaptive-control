@@ -1,0 +1,4 @@
+datasets/*
+val_data/*
+trained_models/*
+train_data/*
