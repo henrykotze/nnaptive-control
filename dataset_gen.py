@@ -101,4 +101,8 @@ if __name__ == '__main__':
         pickle.dump([features,labels],filen)
 
 
+    with open(str(dataset_loc + '/'+nameOfDataset+'_readme'),'rb') as filen:
+        pickle.dump([system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime,N_t,N_i],filen)
+
+
     filen.close()

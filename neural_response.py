@@ -42,7 +42,7 @@ mdl_loc = str(vars(args)['mdl_loc'])
 
 # Get information regarding chosen response
 with open(str(dir+'/readme'),'rb') as filen:
-    system,t,numberSims,initial,zeta,wn,numberSims,randomMag,inputRange,inputTime= pickle.load(filen)
+    system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime= pickle.load(filen)
 
 
 # os.system("./info.py -loc="+str(dir+'/readme'))
@@ -50,9 +50,6 @@ with open(str(dir+'/readme'),'rb') as filen:
 
 # Still need to get data regarding dataset: Ni Nt
 
-N_t = 5
-N_i = 5
-t=80
 filename = filename.replace( str(0), str(n)  )
 
 def getFeaturesAndResponse(filename,N_t,N_i):
@@ -99,10 +96,10 @@ if __name__ == '__main__':
     [features,y,ydot,ydotdot,input] = getFeaturesAndResponse(filename,N_t=N_t,N_i=N_i)
 
     print('----------------------------------------------------------------')
-    print('Loading Model from: ', str(mdl_loc+'/'+mdl_name))
+    print('Loading Model from: ', str(mdl_loc))
     print('----------------------------------------------------------------')
 
-    model = keras.models.load_model(str(mdl_loc+'/'+mdl_name))
+    model = keras.models.load_model(str(mdl_loc))
     predictions = getResponseFromNN(model,features,t, N_t, N_i)
 
 

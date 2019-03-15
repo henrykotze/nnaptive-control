@@ -76,12 +76,15 @@ def precision(y_true,y_pred):
     return K.abs((y_true-y_pred)/y_true)
 
 
-# For TensorBoard
-batch_size = 100
-layer_ids = ['hidden_1',\
-            'hidden_2'\
-            'output']
-layer_sizes = [20,20,1]
+
+
+
+with open(str(dataset_path+'_readme'),'rb') as filen:
+    system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime,N_t,N_i \
+    = pickle.load(filen)
+
+
+
 
 
 tf.reset_default_graph()
@@ -189,10 +192,12 @@ if __name__ == '__main__':
 
 
 
-
+# Writing information regarding to readme
     with open(str(model_logging_dir + '/'+'readme'),'wb+') as filen:
         print('Saving training info to:', str(model_logging_dir + '/'+'readme'))
-        pickle.dump([epochs,mdl_name,weight_reg,learning_rate],filen)
+        pickle.dump([epochs,mdl_name,weight_reg,learning_rate,\
+        system,t,numberSims,initial,zeta,wn,randomMag,inputRange,\
+        inputTime,N_t,N_i],filen)
 
     filen.close()
 
