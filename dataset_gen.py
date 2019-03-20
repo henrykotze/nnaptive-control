@@ -13,6 +13,7 @@ import argparse
 from single_pendulum import pendulum
 import os
 import pickle
+import shelve
 
 
 parser = argparse.ArgumentParser(\
@@ -23,43 +24,46 @@ parser = argparse.ArgumentParser(\
 
 
 parser.add_argument('-loc', default='./train_data/', help='location to stored responses, default: ./train_data')
-parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-0.npz')
-parser.add_argument('-system', default='pendulum', help='type of system to generate data, default: pendulum')
 parser.add_argument('-Nt', default=5, help='number of previous output timesteps used, default: 5')
 parser.add_argument('-Ni', default=5, help='number of previous input timesteps used, default: 5')
-parser.add_argument('-numSim', default=0, help='number of responses to add, default: all')
-parser.add_argument('-name', default='dataset0', help='name of your dataset, default: dataset*')
-parser.add_argument('-data_loc', default='./datasets/', help='location to store dataset: ./datasets/')
+parser.add_argument('-dataset_name', default='dataset0', help='name of your dataset, default: dataset*')
+parser.add_argument('-dataset_loc', default='./datasets/', help='location to store dataset: ./datasets/')
 
 
 args = parser.parse_args()
 
 dir = vars(args)['loc']
-filename = vars(args)['loc']+'/'+vars(args)['filename']
-system = vars(args)['system']
+
+# Getting information from readme file of training data
+
+print('----------------------------------------------------------------')
+print('Fetching training info from: ', str(dir+'/readme'))
+print('----------------------------------------------------------------')
+with shelve.open( str(dir+'/readme')) as db:
+    system = db['system']
+    t = int(db['t'])
+    numberSims = int(db['numSim'])
+    filename = db['filename']
+db.close()
+
+
 N_t = int(vars(args)['Nt'])
 N_i = int(vars(args)['Ni'])
-numSim = int(vars(args)['numSim'])
-nameOfDataset = str(vars(args)['name'])
-dataset_loc = str(vars(args)['data_loc'])
-
-# Add a Readme file in directory to show selected variables that describe the
-# responses
-
-print('----------------------------------------------------------------')
-print('Fetching training info from: ', str(dir+'/training_info'))
-print('----------------------------------------------------------------')
-
-with open(str(dir+'/readme'),'rb') as filen:
-    system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime= pickle.load(filen)
-
-os.system("./info.py -loc="+str(dir+'/readme'))
-
-if(numSim != 0):
-    numberSims = numSim
+nameOfDataset = str(vars(args)['dataset_name'])
+dataset_loc = str(vars(args)['dataset_loc'])
 
 
 
+with shelve.open( str(dataset_loc + '/'+nameOfDataset+'_readme') ) as db:
+    for arg in vars(args):
+        db[arg] = getattr(args,arg)
+
+    with shelve.open(str(dir+'/readme')) as data_readme:
+        for key in data_readme:
+            db[key] = data_readme[key]
+
+    data_readme.close()
+db.close()
 
 if __name__ == '__main__':
 
@@ -69,7 +73,7 @@ if __name__ == '__main__':
 
 
     for numFile in range(numberSims):
-        with np.load(filename) as data:
+        with np.load(str(dir+'/'+filename)) as data:
             print('Loading Data from: ', filename)
 
             response_y = data['y_'] # inputs from given file
@@ -99,10 +103,6 @@ if __name__ == '__main__':
         print('\n--------------------------------------------------------------')
 
         pickle.dump([features,labels],filen)
-
-
-    with open(str(dataset_loc + '/'+nameOfDataset+'_readme'),'rb') as filen:
-        pickle.dump([system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime,N_t,N_i],filen)
 
 
     filen.close()

@@ -14,7 +14,7 @@ import pickle
 from keras.callbacks import TensorBoard
 from datetime import datetime
 from wrap_tensorboard import TrainValTensorBoard
-
+import shelve
 
 
 
@@ -30,8 +30,8 @@ parser.add_argument('-mdl_name', default='nn_mdl', help='Name of model, default:
 parser.add_argument('-reg_w', default='0', help='Regularization of weight, default: 0')
 parser.add_argument('-lr', default='0', help='learning rate, default: 0')
 parser.add_argument('-valset', default='./datasets/', help='location of validation set, default: ./datasets')
-parser.add_argument('-name_train', default='dataset', help='Name Of Training Datasets: ')
-parser.add_argument('-name_val', default='validation_data', help='Name Of Validation Datasets: ')
+parser.add_argument('-name_dataset', default='dataset', help='Name Of Training Datasets: ')
+parser.add_argument('-name_valset', default='validation_data', help='Name Of Validation Datasets: ')
 parser.add_argument('-log_loc', default='./training_results/', help='Location of logs and checkpoints')
 
 
@@ -46,12 +46,15 @@ mdl_name = str(vars(args)['mdl_name'])
 weight_reg = float(vars(args)['reg_w'])
 learning_rate = float(vars(args)['lr'])
 validation_dir = vars(args)['valset']
-training_dataset = vars(args)['name_train']
-validation_dataset = vars(args)['name_val']
+training_dataset = vars(args)['name_dataset']
+validation_dataset = vars(args)['name_valset']
 
 # Directory containing all different models trained with all their logging
 # info
 log_dir = vars(args)['log_loc']
+
+
+
 
 
 # directory with the name of the training session
@@ -72,17 +75,26 @@ checkpoint_dir = os.path.dirname(checkpoint_path)
 os.mkdir(checkpoint_dir)
 
 
-def precision(y_true,y_pred):
-    return K.abs((y_true-y_pred)/y_true)
+
+with shelve.open( str(model_logging_dir + '/'+'readme') ) as db:
+    for arg in vars(args):
+        db[arg] = getattr(args,arg)
+
+    with shelve.open( str(dataset_path+'_readme') ) as dataset_readme:
+        for key in dataset_readme:
+            db[key] = dataset_readme[key]
+
+    dataset_readme.close()
+db.close()
 
 
 
-
-
-with open(str(dataset_path+'_readme'),'rb') as filen:
-    system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime,N_t,N_i \
-    = pickle.load(filen)
-
+with shelve.open( str(dataset_path+'_readme') ) as db:
+    system = db['system']
+    t = int(db['t'])
+    numberSims = int(db['numSim'])
+    filename = db['filename']
+db.close()
 
 
 
@@ -193,13 +205,13 @@ if __name__ == '__main__':
 
 
 # Writing information regarding to readme
-    with open(str(model_logging_dir + '/'+'readme'),'wb+') as filen:
-        print('Saving training info to:', str(model_logging_dir + '/'+'readme'))
-        pickle.dump([epochs,mdl_name,weight_reg,learning_rate,\
-        system,t,numberSims,initial,zeta,wn,randomMag,inputRange,\
-        inputTime,N_t,N_i],filen)
+    # with open(str(model_logging_dir + '/'+'readme'),'wb+') as filen:
+    #     print('Saving training info to:', str(model_logging_dir + '/'+'readme'))
+    #     pickle.dump([epochs,mdl_name,weight_reg,learning_rate,\
+    #     system,t,numberSims,initial,zeta,wn,randomMag,inputRange,\
+    #     inputTime,N_t,N_i],filen)
 
-    filen.close()
+    # filen.close()
 
     # Callback for Checkpoint
     cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,

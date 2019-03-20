@@ -7,9 +7,10 @@ import scipy.integrate as spi
 import matplotlib.pyplot as plt
 import random as rand
 import argparse
-from single_pendulum import pendulum
+from single_pendulum_v2 import pendulum, noisy_pendulum
 import os
 import pickle
+import shelve
 
 
 parser = argparse.ArgumentParser(\
@@ -34,6 +35,8 @@ parser.add_argument('-startNumSim', default=0, help='to start the response-* dif
 parser.add_argument('-timeSteps', default=0.01, help='timestep increments of responses, default: 0.01')
 parser.add_argument('-maxInput', default=0.5, help='maximum input given to system')
 parser.add_argument('-minInput', default=-0.5, help='minimum input given to system')
+parser.add_argument('-noise', default=0, help='use a noise pendulum system')
+
 
 
 args = parser.parse_args()
@@ -41,8 +44,8 @@ args = parser.parse_args()
 zeta=float(vars(args)['zeta'])
 wn=float(vars(args)['wn'])
 time=int(vars(args)['t'])
-numberSims = int(vars(args)['numSim'])
 startSimNum = int(vars(args)['startNumSim'])
+numberSims = int(vars(args)['numSim']) + startSimNum
 dir = vars(args)['loc']
 filename = vars(args)['loc']+'/'+vars(args)['filename']
 system = vars(args)['system']
@@ -53,23 +56,34 @@ timeStep = float(vars(args)['timeSteps'])
 inputMag = float(vars(args)['inputMag'])
 maxInput = float(vars(args)['maxInput'])
 minInput = float(vars(args)['minInput'])
+noise = int(vars(args)['noise'])
+
+
+
+if(noise == 1):
+    system = 'noisy_pendulum'
 
 # Add a Readme file in directory to show selected variables that describe the
 # responses
 
 filename = filename.replace(str(0),str(startSimNum))
 
-# Write information to the readme file in the directory of the response
-with open(str(dir + '/readme'),'wb+') as filen:
-    print('Saving training info to')
-    pickle.dump([system,time,(numberSims+startSimNum),initial,zeta,wn,randomMag,inputMag,inputTime],filen)
-filen.close()
+
+with shelve.open( str(dir+'/readme') ) as db:
+    for arg in vars(args):
+        db[arg] = getattr(args,arg)
+db.close()
+
 
 def determine_system(system,wn,zeta,initial_condition):
     if(system == 'pendulum'):
         response = pendulum(wn,zeta,y=initial_condition*np.pi/180,time_step=timeStep)
+
     elif(system =='second'):
         response = second_order(wn,zeta,y=initial_condition)
+
+    elif(system =='noisy_pendulum'):
+        response = noisy_pendulum(wn,zeta)
 
     return response
 
