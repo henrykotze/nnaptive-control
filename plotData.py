@@ -34,9 +34,10 @@ y = data['y_']
 ydot = data['y_dot']
 ydotdot = data['y_dotdot']
 input = data['input']
+zeta = data['zeta']
+wn = data['wn']
 
-
-
+title = '$\zeta$ ='+str(zeta) + ' $\omega$ = ' + str(wn)
 
 
 plt.rc('text', usetex=True)
@@ -49,6 +50,7 @@ plt.plot(ydotdot,'-', mew=1, ms=8,mec='w')
 plt.plot(ydot,'-', mew=1, ms=8,mec='w')
 plt.plot(y,'-', mew=1, ms=8,mec='w')
 plt.legend(['$input$','$\ddot y$','$\dot y $','$y$'])
+plt.title(title)
 plt.grid()
 
 

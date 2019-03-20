@@ -111,12 +111,15 @@ if __name__ == '__main__':
         response.set_zeta(response_zeta)
 
 
+        time = int(4/(response_zeta*response_wn)*1000) + 1000
+        print(time)
 
-
+        
         input = np.zeros( (time,1) )
         y = np.zeros( (time,1) )
         ydot = np.zeros( (time,1) )
         ydotdot = np.zeros( (time,1) )
+
 
         for t in range(0,time):
             # time at which input starts
