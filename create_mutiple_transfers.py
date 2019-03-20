@@ -20,8 +20,8 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-min_zeta', default = 0.1, help='the minimum damping ratio the responses default: 0.1')
-parser.add_argument('-max_zeta', default = 1.5, help='the maximum damping ratio the responses, default: 1.5')
+parser.add_argument('-min_zeta', default = 0.3, help='the minimum damping ratio the responses default: 0.1')
+parser.add_argument('-max_zeta', default = 1, help='the maximum damping ratio the responses, default: 1.5')
 parser.add_argument('-min_wn', default= 0.5, help='the minimum natural frequency of the responses, default: 0.5')
 parser.add_argument('-max_wn', default= 5, help='the maximum natural frequency of the responses, default: 5')
 parser.add_argument('-loc', default='./train_data/', help='location to store responses, default: ./train_data')
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         time = int(4/(response_zeta*response_wn)*1000) + 1000
         print(time)
 
-        
+
         input = np.zeros( (time,1) )
         y = np.zeros( (time,1) )
         ydot = np.zeros( (time,1) )
