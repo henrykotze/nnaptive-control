@@ -36,8 +36,9 @@ ydotdot = data['y_dotdot']
 input = data['input']
 zeta = data['zeta']
 wn = data['wn']
+system = str(data['system'])
 
-title = '$\zeta$ ='+str(zeta) + ' $\omega$ = ' + str(wn)
+title = system +'\n $\zeta$ ='+str(zeta) + ' $\omega$ = ' + str(wn)
 
 
 plt.rc('text', usetex=True)

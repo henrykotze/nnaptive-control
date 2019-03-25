@@ -58,6 +58,7 @@ inputMag = float(vars(args)['inputMag'])
 maxInput = float(vars(args)['maxInput'])
 minInput = float(vars(args)['minInput'])
 noise = int(vars(args)['noise'])
+randomInput = int(vars(args)['randomInput'])
 
 
 
@@ -88,8 +89,23 @@ def determine_system(system,wn,zeta,initial_condition):
 
     return response
 
-def generateInput():
-    pass
+def generateInput(responseDuration,startInput):
+
+    input = np.zeros( (responseDuration,1) )
+    timestep = startInput
+
+    while timestep < responseDuration:
+        magInput = np.random.random() # Magnitude Size of Input
+        inputDur = int(responseDuration/4*(np.random.random() ) ) # Duration of input
+        zeroInputDur = int(responseDuration/4*(np.random.random()) ) # Duration of zero input
+
+
+        input[timestep:timestep+inputDur] = magInput
+        timestep += inputDur
+        input[timestep:timestep+zeroInputDur] = 0
+        timestep += zeroInputDur
+
+    return input
 
 
 
@@ -100,7 +116,7 @@ if __name__ == '__main__':
 
 
     for numSim in range(startSimNum,startSimNum+numberSims):
-        print('Number of simulation: ', numSim)
+        print('Number of responses: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
         # if(randomMag == 0):
@@ -108,18 +124,23 @@ if __name__ == '__main__':
         # else:
         #     response.update_input(np.random.uniform(-inputMag,inputMag))
 
-        input = np.zeros( (time,1) )
+
+        input = generateInput(time,inputTime)
         y = np.zeros( (time,1) )
         ydot = np.zeros( (time,1) )
         ydotdot = np.zeros( (time,1) )
 
         for t in range(0,time):
             # time at which input starts
-            if(t == inputTime):
+            if(t == inputTime and randomInput == 0):
                 if(randomMag == 0):
                     response.update_input(inputMag)
                 else:
                     response.update_input(np.random.uniform(minInput,maxInput))
+
+            elif(randomInput == 1):
+                response.update_input( input[t] )
+
 
             # temporary variables
             t1,t2,t3,t4 = response.getAllStates()
@@ -133,7 +154,7 @@ if __name__ == '__main__':
 
 
         # Saves response in *.npz file
-        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn)
+        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system))
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))
