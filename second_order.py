@@ -6,7 +6,7 @@ import numpy as np
 
 
 class second_order:
-    def __init__(self,wn=1.5,zeta=0.5,time_step=0.001,input=0, ydotdot = 0, ydot = 0, y = 0):
+    def __init__(self,wn=1.5,zeta=0.5,time_step=0.01,input=0, ydotdot = 0, ydot = 0, y = 0):
         self.wn = wn
         self.zeta = zeta
         self.input = input

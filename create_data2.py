@@ -36,6 +36,7 @@ parser.add_argument('-timeSteps', default=0.01, help='timestep increments of res
 parser.add_argument('-maxInput', default=0.5, help='maximum input given to system')
 parser.add_argument('-minInput', default=-0.5, help='minimum input given to system')
 parser.add_argument('-noise', default=0, help='use a noise pendulum system')
+parser.add_argument('-randomInput', default=0, help='use a noise pendulum system')
 
 
 
@@ -86,6 +87,9 @@ def determine_system(system,wn,zeta,initial_condition):
         response = noisy_pendulum(wn,zeta)
 
     return response
+
+def generateInput():
+    pass
 
 
 

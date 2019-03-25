@@ -21,6 +21,6 @@ class noisy_pendulum(pendulum):
 
 
         self.ydot += self.integration(self.ydotdot)[0]
-        self.y += self.integration(self.ydot)[0] + self.noise(-0.00005,0.00005)
+        self.y += self.integration(self.ydot)[0] #+ self.noise(-0.00005,0.00005)
 
         self.t += self.dt

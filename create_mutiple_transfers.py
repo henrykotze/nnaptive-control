@@ -79,15 +79,15 @@ with shelve.open( str(dir+'/readme') ) as db:
 db.close()
 
 
-def determine_system(system):
+def determine_system(system,timestep):
     if(system == 'pendulum'):
-        response = pendulum()
+        response = pendulum(time_step=timestep)
 
     elif(system =='second'):
-        response = second_order()
+        response = second_order(time_step=timestep)
 
     elif(system =='noisy_pendulum'):
-        response = noisy_pendulum()
+        response = noisy_pendulum(time_step=timestep)
 
     return response
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     for numSim in range(startSimNum,startSimNum+numberSims):
         print('Number of response: ', numSim)
-        response = determine_system(system)
+        response = determine_system(system,timeStep)
 
         # choosing randomly the natural frequency and damping ratio of response
         response_wn = np.random.uniform(min_wn,max_wn)
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         response.set_zeta(response_zeta)
 
 
-        time = int(4/(response_zeta*response_wn)*1000) + 1000
+        time = int(4/(response_zeta*response_wn)*(1/timeStep))
         print(time)
 
 
