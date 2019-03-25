@@ -92,6 +92,23 @@ def determine_system(system,timestep):
     return response
 
 
+def generateInput(responseDuration,startInput):
+
+    input = np.zeros( (responseDuration,1) )
+    timestep = startInput
+
+    while timestep < responseDuration:
+        magInput = np.random.random() # Magnitude Size of Input
+        inputDur = int(responseDuration/4*(np.random.random() ) ) # Duration of input
+        zeroInputDur = int(responseDuration/4*(np.random.random()) ) # Duration of zero input
+
+
+        input[timestep:timestep+inputDur] = magInput
+        timestep += inputDur
+        input[timestep:timestep+zeroInputDur] = 0
+        timestep += zeroInputDur
+
+    return input
 
 
 if __name__ == '__main__':
@@ -141,7 +158,7 @@ if __name__ == '__main__':
 
 
         # Saves response in *.npz file
-        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=response_zeta,wn=response_wn)
+        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=response_zeta,wn=response_wn,system=str(system))
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))

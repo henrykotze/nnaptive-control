@@ -49,7 +49,7 @@ startSimNum = int(vars(args)['startNumSim'])
 numberSims = int(vars(args)['numSim']) + startSimNum
 dir = vars(args)['loc']
 filename = vars(args)['loc']+'/'+vars(args)['filename']
-system = vars(args)['system']
+system = str(vars(args)['system'])
 initial = float(vars(args)['init'])
 randomMag = int(vars(args)['rand'])
 inputTime = int(vars(args)['inputTime'])
@@ -63,7 +63,7 @@ randomInput = int(vars(args)['randomInput'])
 
 
 if(noise == 1):
-    system = 'noisy_pendulum'
+    system_info = 'noisy ' + system
 
 # Add a Readme file in directory to show selected variables that describe the
 # responses
@@ -84,20 +84,18 @@ def determine_system(system,wn,zeta,initial_condition):
     elif(system =='second'):
         response = second_order(wn,zeta,y=initial_condition)
 
-    elif(system =='noisy_pendulum'):
-        response = noisy_pendulum(wn,zeta)
 
     return response
 
-def generateInput(responseDuration,startInput):
+def generateInput(responseDuration,startInput,minInput,maxInput):
 
     input = np.zeros( (responseDuration,1) )
     timestep = startInput
 
     while timestep < responseDuration:
-        magInput = np.random.random() # Magnitude Size of Input
-        inputDur = int(responseDuration/4*(np.random.random() ) ) # Duration of input
-        zeroInputDur = int(responseDuration/4*(np.random.random()) ) # Duration of zero input
+        magInput = (maxInput-minInput)*np.random.random()+minInput # Magnitude Size of Input
+        inputDur = int(responseDuration/5*(np.random.random() ) ) # Duration of input
+        zeroInputDur = int(responseDuration/5*(np.random.random()) ) # Duration of zero input
 
 
         input[timestep:timestep+inputDur] = magInput
@@ -107,25 +105,27 @@ def generateInput(responseDuration,startInput):
 
     return input
 
+def addNoise(response):
+    sizeOfArray = np.size(response)
+    response += np.random.random((sizeOfArray,1))/500
+    return response
+
+
 
 
 
 if __name__ == '__main__':
-    print('Creating the response of ', str(system))
+    print('Creating the response of ', str(system_info))
     print('Writing responses to:', filename )
+    print(startSimNum, numberSims)
 
-
-    for numSim in range(startSimNum,startSimNum+numberSims):
+    for numSim in range(startSimNum,numberSims):
         print('Number of responses: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
-        # if(randomMag == 0):
-        #     response.update_input(inputMag)
-        # else:
-        #     response.update_input(np.random.uniform(-inputMag,inputMag))
 
 
-        input = generateInput(time,inputTime)
+        input = generateInput(time,inputTime,minInput,maxInput)
         y = np.zeros( (time,1) )
         ydot = np.zeros( (time,1) )
         ydotdot = np.zeros( (time,1) )
@@ -153,8 +153,12 @@ if __name__ == '__main__':
             response.step()
 
 
+        if(noise == 1):
+            y = addNoise(y)
+
         # Saves response in *.npz file
-        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system))
+        # print(system)
+        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system_info))
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))
