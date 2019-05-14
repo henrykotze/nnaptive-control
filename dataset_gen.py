@@ -85,9 +85,9 @@ if __name__ == '__main__':
                 labels[step+t*numFile] = input[step]
 
                 for n in range(0,N_i):
-                    features[step+t*numFile,n] = input[step-n]
+                    features[step+t*numFile,n] = input[step-n-1]
                 for n in range(0,N_t):
-                    features[step+t*numFile,N_i+n] = response_y[step-n]
+                    features[step+t*numFile,N_i+n] = response_y[step-n+1]
 
                 # labels[step+t*numfile] = response_y[step+1]
                 #

@@ -36,6 +36,7 @@ parser.add_argument('-timeSteps', default=0.01, help='timestep increments of res
 parser.add_argument('-maxInput', default=0.5, help='maximum input given to system')
 parser.add_argument('-minInput', default=-0.5, help='minimum input given to system')
 parser.add_argument('-noise', default=0, help='use a noise pendulum system')
+parser.add_argument('-randomInput', default=0, help='use a noise pendulum system')
 
 
 
@@ -48,7 +49,7 @@ startSimNum = int(vars(args)['startNumSim'])
 numberSims = int(vars(args)['numSim']) + startSimNum
 dir = vars(args)['loc']
 filename = vars(args)['loc']+'/'+vars(args)['filename']
-system = vars(args)['system']
+system = str(vars(args)['system'])
 initial = float(vars(args)['init'])
 randomMag = int(vars(args)['rand'])
 inputTime = int(vars(args)['inputTime'])
@@ -57,11 +58,14 @@ inputMag = float(vars(args)['inputMag'])
 maxInput = float(vars(args)['maxInput'])
 minInput = float(vars(args)['minInput'])
 noise = int(vars(args)['noise'])
+randomInput = int(vars(args)['randomInput'])
 
 
 
 if(noise == 1):
-    system = 'noisy_pendulum'
+    system_info = 'noisy ' + system
+else:
+    system_info = system
 
 # Add a Readme file in directory to show selected variables that describe the
 # responses
@@ -82,40 +86,63 @@ def determine_system(system,wn,zeta,initial_condition):
     elif(system =='second'):
         response = second_order(wn,zeta,y=initial_condition)
 
-    elif(system =='noisy_pendulum'):
-        response = noisy_pendulum(wn,zeta)
 
+    return response
+
+def generateInput(responseDuration,startInput,minInput,maxInput):
+
+    input = np.zeros( (responseDuration,1) )
+    timestep = startInput
+
+    while timestep < responseDuration:
+        magInput = (maxInput-minInput)*np.random.random()+minInput # Magnitude Size of Input
+        inputDur = int(responseDuration/5*(np.random.random() ) ) # Duration of input
+        zeroInputDur = int(responseDuration/5*(np.random.random()) ) # Duration of zero input
+
+
+        input[timestep:timestep+inputDur] = magInput
+        timestep += inputDur
+        input[timestep:timestep+zeroInputDur] = 0
+        timestep += zeroInputDur
+
+    return input
+
+def addNoise(response):
+    sizeOfArray = np.size(response)
+    response += np.random.random((sizeOfArray,1))/500
     return response
 
 
 
 
+
 if __name__ == '__main__':
-    print('Creating the response of ', str(system))
+    print('Creating the response of ', str(system_info))
     print('Writing responses to:', filename )
+    print(startSimNum, numberSims)
 
-
-    for numSim in range(startSimNum,startSimNum+numberSims):
-        print('Number of simulation: ', numSim)
+    for numSim in range(startSimNum,numberSims):
+        print('Number of responses: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
-        # if(randomMag == 0):
-        #     response.update_input(inputMag)
-        # else:
-        #     response.update_input(np.random.uniform(-inputMag,inputMag))
 
-        input = np.zeros( (time,1) )
+
+        input = generateInput(time,inputTime,minInput,maxInput)
         y = np.zeros( (time,1) )
         ydot = np.zeros( (time,1) )
         ydotdot = np.zeros( (time,1) )
 
         for t in range(0,time):
             # time at which input starts
-            if(t == inputTime):
+            if(t == inputTime and randomInput == 0):
                 if(randomMag == 0):
                     response.update_input(inputMag)
                 else:
                     response.update_input(np.random.uniform(minInput,maxInput))
+
+            elif(randomInput == 1):
+                response.update_input( input[t] )
+
 
             # temporary variables
             t1,t2,t3,t4 = response.getAllStates()
@@ -128,8 +155,12 @@ if __name__ == '__main__':
             response.step()
 
 
+        if(noise == 1):
+            y = addNoise(y)
+
         # Saves response in *.npz file
-        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot)
+        # print(system)
+        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system_info))
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))

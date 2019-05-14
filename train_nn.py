@@ -106,10 +106,10 @@ def build_model(dataset):
 
     model = keras.Sequential([
     # layers.Flatten(input_shape=(4,)),\
-    layers.Dense(5,kernel_regularizer=keras.regularizers.l2(weight_reg),input_shape=dataset.output_shapes[0] ), \
+    layers.Dense(15,kernel_regularizer=keras.regularizers.l2(weight_reg),input_shape=dataset.output_shapes[0] ), \
     layers.ReLU(),\
-    # layers.Dense(2,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
-    # layers.ReLU(),\
+    layers.Dense(10,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
+    layers.ReLU(),\
     # layers.Dense(20,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
     # layers.ReLU(),\
     # layers.Dropout(0.2),\
