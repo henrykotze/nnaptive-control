@@ -82,12 +82,19 @@ if __name__ == '__main__':
 
             for step in range( np.maximum(N_t,N_i), t- np.maximum(N_t,N_i) ):
 
-                labels[step+t*numFile] = response_y[step+1]
+                labels[step+t*numFile] = input[step]
 
                 for n in range(0,N_i):
                     features[step+t*numFile,n] = input[step-n]
                 for n in range(0,N_t):
                     features[step+t*numFile,N_i+n] = response_y[step-n]
+
+                # labels[step+t*numfile] = response_y[step+1]
+                #
+                # for n in range(0,N_i):
+                #     features[step+t*numFile,n] = input[step-n]
+                # for n in range(0,N_t):
+                #     features[step+t*numFile,N_i+n] = response_y[step-n]
                 # for n in range(0,N_t):
                     # features[step+t*numFile,N_i+n+N_t] = response_ydot[step-n]
 
