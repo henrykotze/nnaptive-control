@@ -64,6 +64,8 @@ randomInput = int(vars(args)['randomInput'])
 
 if(noise == 1):
     system_info = 'noisy ' + system
+else:
+    system_info = system
 
 # Add a Readme file in directory to show selected variables that describe the
 # responses

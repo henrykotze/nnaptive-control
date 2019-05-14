@@ -12,6 +12,7 @@ import argparse
 from single_pendulum import pendulum
 import os
 import pickle
+import shelve
 
 
 parser = argparse.ArgumentParser(\
@@ -41,9 +42,20 @@ mdl_loc = str(vars(args)['mdl_loc'])
 
 
 # Get information regarding chosen response
-with open(str(dir+'/readme'),'rb') as filen:
-    system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime= pickle.load(filen)
+# with open(str(dir+'/readme'),'rb') as filen:
+#     system,t,numberSims,initial,zeta,wn,randomMag,inputRange,inputTime= pickle.load(filen)
 
+print('----------------------------------------------------------------')
+print('Fetching training info from: ', str(dir+'/readme'))
+print('----------------------------------------------------------------')
+with shelve.open( str(dir+'/readme')) as db:
+    system=str((db)['system'])
+    t= int((db)['t'])
+    zeta = float((db)['zeta'])
+    wn = float((db)['wn'])
+    inputTime = int((db)['inputTime'])
+
+db.close()
 
 # os.system("./info.py -loc="+str(dir+'/readme'))
 

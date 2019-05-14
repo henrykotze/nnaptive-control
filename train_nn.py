@@ -106,10 +106,12 @@ def build_model(dataset):
 
     model = keras.Sequential([
     # layers.Flatten(input_shape=(4,)),\
-    layers.Dense(10,kernel_regularizer=keras.regularizers.l2(weight_reg),input_shape=dataset.output_shapes[0] ), \
+    layers.Dense(20,kernel_regularizer=keras.regularizers.l2(weight_reg),input_shape=dataset.output_shapes[0] ), \
     layers.ReLU(),\
-    # layers.Dense(5,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
+    # layers.Dropout(0.2),\
+    # layers.Dense(100,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
     # layers.ReLU(),\
+    # layers.Dropout(0.3),\
     # layers.Dense(20,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
     # layers.ReLU(),\
     # layers.Dropout(0.2),\
@@ -229,7 +231,7 @@ if __name__ == '__main__':
 
 
     # Learning of Model
-    history = model.fit(features, labels, epochs=epochs, \
+    history = model.fit(features, labels, epochs=epochs,batch_size=32, \
     validation_data=(features_val,labels_val), verbose=1, callbacks=[tbCallBack,cp_callback])
     # validation_split=0.1, verbose=1, callbacks=[TrainValTensorBoard(log_dir=logdir, write_graph=False)])
     # validation_data=(features_val,labels_val),verbose=1,callbacks=[TrainValTensorBoard(log_dir=logdir, write_graph=False)])
@@ -242,4 +244,4 @@ if __name__ == '__main__':
     print('\n-----------------------------------')
     print('\n Model Saved at: ' , str(mdl_loc + '/' + mdl_name))
     print('\n-----------------------------------')
-    model.save(mdl_loc+'/'+mdl_name)
+    model.save(model_logging_dir+'/'+mdl_name)
