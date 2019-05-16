@@ -1,2 +1,2 @@
 # nnaptive-control
-Neural Network Adaptive Controller implement in OpenAI Gym for rotary wing UAV
+Neural Network Adaptive Controller implement for rotary wing UAV
