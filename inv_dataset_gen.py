@@ -2,12 +2,12 @@
 
 
 import tensorflow as tf
-# from tensorflow import keras
-# from tensorflow.keras import layers
+from tensorflow import keras
+from tensorflow.keras import layers
 from second_order import second_order
 import numpy as np
-# import scipy.integrate as spi
-# import matplotlib.pyplot as plt
+import scipy.integrate as spi
+import matplotlib.pyplot as plt
 import random as rand
 import argparse
 from single_pendulum import pendulum
@@ -82,12 +82,19 @@ if __name__ == '__main__':
 
             for step in range( np.maximum(N_t,N_i), t- np.maximum(N_t,N_i) ):
 
-                labels[step+t*numFile] = response_y[step+1]
+                labels[step+t*numFile] = input[step]
 
                 for n in range(0,N_i):
-                    features[step+t*numFile,n] = input[step-n]
+                    features[step+t*numFile,n] = input[step-n-1]
                 for n in range(0,N_t):
-                    features[step+t*numFile,N_i+n] = response_y[step-n]
+                    features[step+t*numFile,N_i+n] = response_y[step-n+1]
+
+                # labels[step+t*numfile] = response_y[step+1]
+                #
+                # for n in range(0,N_i):
+                #     features[step+t*numFile,n] = input[step-n]
+                # for n in range(0,N_t):
+                #     features[step+t*numFile,N_i+n] = response_y[step-n]
                 # for n in range(0,N_t):
                     # features[step+t*numFile,N_i+n+N_t] = response_ydot[step-n]
 
