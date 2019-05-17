@@ -24,7 +24,7 @@ parser.add_argument('-zeta', default = 1, help='the damping ratio the response, 
 parser.add_argument('-wn', default= 2, help='the natural frequency of the response, default: 2')
 parser.add_argument('-loc', default='./train_data/', help='location to store responses, default: ./train_data')
 parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-0.npz')
-parser.add_argument('-t', default=1000, help='time lenght of responses, default: 1000ms')
+parser.add_argument('-t', default=10, help='time lenght of responses, default: 10s')
 parser.add_argument('-numSim', default=2, help='number of responses to generate, default: 1')
 parser.add_argument('-inputMag', default=1, help='magnitude of input given to system, default: +-1')
 parser.add_argument('-system', default='pendulum', help='type of system to generate data, default: pendulum')
@@ -32,7 +32,7 @@ parser.add_argument('-init', default=0, help='Initial Condition, default: 0')
 parser.add_argument('-rand', default=0, help='pick from normal distribution the input, default: 0')
 parser.add_argument('-inputTime', default=50, help='time at which inputs starts, default: 50ms')
 parser.add_argument('-startNumSim', default=0, help='to start the response-* different then 0, default: 0')
-parser.add_argument('-timeSteps', default=0.01, help='timestep increments of responses, default: 0.01')
+parser.add_argument('-dt', default=0.01, help='timestep increments of responses, default: 0.01')
 parser.add_argument('-maxInput', default=0.5, help='maximum input given to system')
 parser.add_argument('-minInput', default=-0.5, help='minimum input given to system')
 parser.add_argument('-noise', default=0, help='use a noise pendulum system')
@@ -44,7 +44,7 @@ args = parser.parse_args()
 
 zeta=float(vars(args)['zeta'])
 wn=float(vars(args)['wn'])
-time=int(vars(args)['t'])
+t=int(vars(args)['t'])
 startSimNum = int(vars(args)['startNumSim'])
 numberSims = int(vars(args)['numSim']) + startSimNum
 dir = vars(args)['loc']
@@ -53,7 +53,7 @@ system = str(vars(args)['system'])
 initial = float(vars(args)['init'])
 randomMag = int(vars(args)['rand'])
 inputTime = int(vars(args)['inputTime'])
-timeStep = float(vars(args)['timeSteps'])
+dt = float(vars(args)['dt'])
 inputMag = float(vars(args)['inputMag'])
 maxInput = float(vars(args)['maxInput'])
 minInput = float(vars(args)['minInput'])
@@ -81,7 +81,7 @@ db.close()
 
 def determine_system(system,wn,zeta,initial_condition):
     if(system == 'pendulum'):
-        response = pendulum(wn,zeta,y=initial_condition*np.pi/180,time_step=timeStep)
+        response = pendulum(wn,zeta,y=initial_condition*np.pi/180,time_step=dt)
 
     elif(system =='second'):
         response = second_order(wn,zeta,y=initial_condition)
@@ -96,8 +96,8 @@ def generateInput(responseDuration,startInput,minInput,maxInput):
 
     while timestep < responseDuration:
         magInput = (maxInput-minInput)*np.random.random()+minInput # Magnitude Size of Input
-        inputDur = int(responseDuration/5*(np.random.random() ) ) # Duration of input
-        zeroInputDur = int(responseDuration/5*(np.random.random()) ) # Duration of zero input
+        inputDur = int(responseDuration/10*(np.random.random() ) ) # Duration of input
+        zeroInputDur = int(responseDuration/10*(np.random.random()) ) # Duration of zero input
 
 
         input[timestep:timestep+inputDur] = magInput
@@ -121,18 +121,21 @@ if __name__ == '__main__':
     print('Writing responses to:', filename )
     print(startSimNum, numberSims)
 
+    timeSteps= int(t/dt) # time in number of step
+
+
     for numSim in range(startSimNum,numberSims):
         print('Number of responses: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
 
 
-        input = generateInput(time,inputTime,minInput,maxInput)
-        y = np.zeros( (time,1) )
-        ydot = np.zeros( (time,1) )
-        ydotdot = np.zeros( (time,1) )
+        input = generateInput(timeSteps,inputTime,minInput,maxInput)
+        y = np.zeros( (timeSteps,1) )
+        ydot = np.zeros( (timeSteps,1) )
+        ydotdot = np.zeros( (timeSteps,1) )
 
-        for t in range(0,time):
+        for t in range(0,timeSteps):
             # time at which input starts
             if(t == inputTime and randomInput == 0):
                 if(randomMag == 0):

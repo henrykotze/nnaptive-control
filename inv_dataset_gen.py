@@ -42,6 +42,7 @@ print('----------------------------------------------------------------')
 with shelve.open( str(dir+'/readme')) as db:
     system = db['system']
     t = int(db['t'])
+    dt = float(db['dt'])
     numberSims = int(db['numSim'])
     filename = db['filename']
 db.close()
@@ -51,7 +52,7 @@ N_t = int(vars(args)['Nt'])
 N_i = int(vars(args)['Ni'])
 nameOfDataset = str(vars(args)['dataset_name'])
 dataset_loc = str(vars(args)['dataset_loc'])
-
+timeSteps = int(t/dt)
 
 
 with shelve.open( str(dataset_loc + '/'+nameOfDataset+'_readme') ) as db:
@@ -68,8 +69,8 @@ db.close()
 if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
-    features = np.zeros( (t*numberSims,N_t+N_i) )   # +1 is for the input
-    labels = np.zeros( (t*numberSims,1) )
+    features = np.zeros( (timeSteps*numberSims,N_t+N_i) )   # +1 is for the input
+    labels = np.zeros( (timeSteps*numberSims,1) )
 
 
     for numFile in range(numberSims):
@@ -80,24 +81,14 @@ if __name__ == '__main__':
             response_ydot = data['y_dot'] # inputs from given file
             input = data['input']
 
-            for step in range( np.maximum(N_t,N_i), t- np.maximum(N_t,N_i) ):
+            for step in range( np.maximum(N_t,N_i), timeSteps- np.maximum(N_t,N_i) ):
 
-                labels[step+t*numFile] = input[step]
+                labels[step+timeSteps*numFile] = input[step]
 
                 for n in range(0,N_i):
-                    features[step+t*numFile,n] = input[step-n-1]
+                    features[step+timeSteps*numFile,n] = input[step-n-1]
                 for n in range(0,N_t):
-                    features[step+t*numFile,N_i+n] = response_y[step-n+1]
-
-                # labels[step+t*numfile] = response_y[step+1]
-                #
-                # for n in range(0,N_i):
-                #     features[step+t*numFile,n] = input[step-n]
-                # for n in range(0,N_t):
-                #     features[step+t*numFile,N_i+n] = response_y[step-n]
-                # for n in range(0,N_t):
-                    # features[step+t*numFile,N_i+n+N_t] = response_ydot[step-n]
-
+                    features[step+timeSteps*numFile,N_i+n] = response_y[step-n+1]
 
             # fetch next name of *.npz file to be loaded
             filename = filename.replace(str(numFile),str(numFile+1))

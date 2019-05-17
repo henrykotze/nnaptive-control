@@ -20,13 +20,12 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-loc', default='./train_data/', help='location to stored responses, default: ./train_data')
+parser.add_argument('-loc', default='./train_data/', help='location to stored dataset, default: ./dataset')
 parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-0.npz')
 parser.add_argument('-Nt', default=5, help='number of previous output timesteps used, default: 5')
 parser.add_argument('-Ni', default=5, help='number of previous input timesteps used, default: 5')
 parser.add_argument('-n', default='0', help='number of response to plot: 0')
 parser.add_argument('-mdl_loc', default='./trained_models/', help='Location to save model: ./trained_models')
-parser.add_argument('-mdl_name', default='nn_mdl', help='Name of model, default: nn_mdl')
 
 
 args = parser.parse_args()
@@ -36,9 +35,7 @@ filename = vars(args)['loc']+'/'+vars(args)['filename']
 N_t = int(vars(args)['Nt'])
 N_i = int(vars(args)['Ni'])
 n = int(vars(args)['n'])
-mdl_name = str(vars(args)['mdl_name'])
 mdl_loc = str(vars(args)['mdl_loc'])
-
 
 # Get information regarding chosen response
 # with open(str(dir+'/readme'),'rb') as filen:
@@ -48,19 +45,22 @@ mdl_loc = str(vars(args)['mdl_loc'])
 with shelve.open( str(dir+'/readme') ) as db:
     system = db['system']
     t = int(db['t'])
+    dt = float(db['dt'])
     # filename = db ['filename']
 db.close()
 # os.system("./info.py -loc="+str(dir+'/readme'))
 
 
 # Still need to get data regarding dataset: Ni Nt
-
+N_i = 10
+N_t = 10
 filename = filename.replace( str(0), str(n)  )
+timeSteps = int(t/dt)
 
 def getFeaturesAndResponse(filename,N_t,N_i):
     # Load Data from created response
 
-    features = np.zeros( (t,N_t+N_i) )   # +1 is for the input
+    features = np.zeros((timeSteps,N_t+N_i))    # +1 is for the input
     with np.load(filename) as data:
         print('----------------------------------------------------------------')
         print('Loading Data from: ', filename)
@@ -76,7 +76,7 @@ def getFeaturesAndResponse(filename,N_t,N_i):
         response_ydot = data['y_dot'] # inputs from given file
         input = data['input']
 
-        for step in range( np.maximum(N_t,N_i), t - np.maximum(N_t,N_i) ):
+        for step in range( np.maximum(N_t,N_i), timeSteps - np.maximum(N_t,N_i) ):
             for n in range(0,N_i):
                 features[step,n] = input[step-n-1]
             for n in range(0,N_t):
@@ -87,10 +87,10 @@ def getFeaturesAndResponse(filename,N_t,N_i):
 
 def getResponseFromNN(model,features,timesteps,Nt,Ni):
 
-    predictions = np.zeros( (timesteps - np.maximum(Nt,Ni),1) )
-
+    predictions = np.zeros( (timesteps,1) )
     for t_steps in range( np.maximum(Nt,Ni), timesteps - np.maximum(Nt,Ni) ):
         predictions[t_steps] = model.predict( np.array( [features[t_steps,:] ]) )
+
     return predictions
 
 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     print('----------------------------------------------------------------')
 
     model = keras.models.load_model(str(mdl_loc))
-    predictions = getResponseFromNN(model,features,t, N_t, N_i)
+    predictions = getResponseFromNN(model,features,timeSteps, N_t, N_i)
 
 
 
