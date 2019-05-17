@@ -107,6 +107,42 @@ def generateInput(responseDuration,startInput,minInput,maxInput):
 
     return input
 
+
+
+def generateRampInput(responseDuration,startInput,minInput,maxInput):
+
+    input = np.zeros( (responseDuration,1) )
+    timestep = startInput
+
+    while timestep < responseDuration:
+        magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
+        firstDur = int(responseDuration/10*(np.random.random() ) )+1 # Duration of first half ramp
+        secondDur = int(responseDuration/10*(np.random.random()) )+1 # Duration of second half ramp
+        if(timestep + firstDur+secondDur < responseDuration):
+
+            grad1 = magInput/firstDur   # gradient of first part
+            grad2 = -magInput/secondDur  # Gradientr of second part
+
+            firstLine = np.arange(firstDur)*grad1
+
+            secondLine = -1*np.arange(secondDur,0,-1)*grad2
+            input[timestep:timestep+firstDur] = np.transpose(np.array([firstLine]))
+            timestep += firstDur
+            input[timestep:timestep+secondDur] = np.transpose(np.array([secondLine]))
+            timestep += secondDur
+        else:
+            break
+
+    return input
+
+
+def generateAccInput(responseDuration,startInput,minInput,maxInput):
+    pass
+
+
+
+
+
 def addNoise(response):
     sizeOfArray = np.size(response)
     response += np.random.random((sizeOfArray,1))/500
@@ -130,7 +166,7 @@ if __name__ == '__main__':
 
 
 
-        input = generateInput(timeSteps,inputTime,minInput,maxInput)
+        input = generateRampInput(timeSteps,inputTime,minInput,maxInput)
         y = np.zeros( (timeSteps,1) )
         ydot = np.zeros( (timeSteps,1) )
         ydotdot = np.zeros( (timeSteps,1) )
