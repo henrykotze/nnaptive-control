@@ -135,8 +135,12 @@ def generateRampInput(responseDuration,startInput,minInput,maxInput):
 
     return input
 
-def exponenial_func(x, a, b, c):
-    return a*np.exp(-b*x)+c
+def straightline_func(x, a, b):
+    return a*x+b
+
+
+def exponential_func(x, a, b):
+    return a*np.exp(b*x)
 
 def generateAccInput(responseDuration,startInput,minInput,maxInput):
 
@@ -147,6 +151,7 @@ def generateAccInput(responseDuration,startInput,minInput,maxInput):
         magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
         firstDur = int(responseDuration/10*(np.random.random() ) )+1 # Duration of first half ramp
         secondDur = int(responseDuration/10*(np.random.random()) )+1 # Duration of second half ramp
+
         if(timestep + firstDur+secondDur < responseDuration):
 
             grad1 = magInput/firstDur   # gradient of first part
@@ -164,42 +169,70 @@ def generateAccInput(responseDuration,startInput,minInput,maxInput):
 
     return input
 
+def generateCombinationInput(responseDuration,startInput,minInput,maxInput):
+    input1 = generateStepInput(responseDuration,startInput,minInput/2,maxInput/2)
+    input2 = generateRampInput(responseDuration,startInput,minInput/2,maxInput/2)
+    # input = addNoise(input1+input2,250)
+    return input1 +input2
 
 def generateExpoInput(responseDuration,startInput,minInput,maxInput):
-
+# this is broken
     input = np.zeros( (responseDuration,1) )
     timestep = startInput
 
     while timestep < responseDuration:
 
         magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
-        Dur = int(responseDuration/10*(np.random.random() ) )+1 # Duration of first half ramp
+        Dur = int(responseDuration/10*(np.random.random()))+10 # Duration of first half ramp
+        Dur2 = int(responseDuration/10*(np.random.random()))+10 # Duration of first half ramp
+        neg = 1.0
 
-        if(timestep + Dur < responseDuration):
+        if(magInput < 0):
+            magInput = -1*magInput
+            neg = -1.0
 
-            popt, pcov = curve_fit(exponenial_func, np.array([0, timestep,timestep+Dur]) , np.array([0, 0,magInput]), p0=(1, 1e-6, 1))
+        if(timestep + Dur + Dur2+1 < responseDuration):
+            y_ = np.log(np.array([0.00001, magInput]))
+            x = np.array([timestep+1,timestep+Dur])
+            popt, pcov = curve_fit(straightline_func, x, y_)
+            b = popt[0]
+            a = np.exp(popt[1])
 
             curve = np.arange(timestep,timestep+Dur)
-            curve = exponenial_func(curve, *popt)
+            curve = neg*exponential_func(curve, a, b)
 
             input[timestep:timestep+Dur] = np.transpose(np.array([curve]))
-            timestep += Dur
+
+            y_ = np.log(np.array([magInput, 0.001]))
+            x = np.array([timestep+Dur,timestep+Dur+Dur2])
+            popt, pcov = curve_fit(straightline_func, x, y_)
+            b = popt[0]
+            a = np.exp(popt[1])
+            curve = np.arange(timestep+Dur,timestep+Dur+Dur2)
+            curve = neg*exponential_func(curve, a, b)
+            # plt.figure(1)
+            # plt.plot(curve,'.-', mew=1, ms=8,mec='w')
+            # plt.show()
+
+            input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
+
+
+            timestep = timestep + Dur+Dur2
         else:
             break
 
     return input
 
+def generateNoiseInput(responseDuration,startInput,minInput,maxInput):
 
+    input = np.zeros( (responseDuration,1) )
+    input += (maxInput-minInput)*np.random.random((np.size(input),1))+minInput
+    return input
 
-
-
-def addNoise(response):
+def addNoise(response,level):
     sizeOfArray = np.size(response)
-    response += np.random.random((sizeOfArray,1))/500
+    response += np.random.random((sizeOfArray,1))/level
     return response
-
-
-
 
 
 if __name__ == '__main__':
@@ -214,8 +247,18 @@ if __name__ == '__main__':
         print('Number of responses: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
+        input_type = np.random.randint(0,3)
+        if(input_type == 0):
+            input = generateStepInput(timeSteps,inputTime,minInput,maxInput)
+        elif(input_type == 1):
+            input = generateRampInput(timeSteps,inputTime,minInput,maxInput)
+        elif(input_type == 2):
+            input =  generateCombinationInput(timeSteps,inputTime,minInput,maxInput);
+        # elif(input_type == 3):
+        #     input = generateNoiseInput(timeSteps,inputTime,minInput,maxInput)
 
 
+        # input = generateAccInput(timeSteps,inputTime,minInput,maxInput)
         input = generateExpoInput(timeSteps,inputTime,minInput,maxInput)
         y = np.zeros( (timeSteps,1) )
         ydot = np.zeros( (timeSteps,1) )
@@ -245,7 +288,7 @@ if __name__ == '__main__':
 
 
         if(noise == 1):
-            y = addNoise(y)
+            y = addNoise(y,500)
 
         # Saves response in *.npz file
         # print(system)
