@@ -69,8 +69,10 @@ db.close()
 if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
-    features = np.zeros( (timeSteps*numberSims,N_t+N_i) )   # +1 is for the input
+    features = np.zeros( (timeSteps*numberSims,N_t+N_t) )   # +1 is for the input
     labels = np.zeros( (timeSteps*numberSims,1) )
+    max_y = 0
+    max_ydotdot = 0
 
 
     for numFile in range(numberSims):
@@ -78,22 +80,33 @@ if __name__ == '__main__':
             print('Loading Data from: ', filename)
 
             response_y = data['y_'] # inputs from given file
-            response_ydot = data['y_dot'] # inputs from given file
+            response_ydotdot = data['y_dotdot'] # inputs from given file
             input = data['input']
 
-            for step in range( np.maximum(N_t,N_i), timeSteps- np.maximum(N_t,N_i) ):
+            if(np.amax(response_ydotdot) > max_ydotdot):
+                 max_ydotdot = np.amax(response_ydotdot)
+
+
+            if(np.amax(response_y) > max_y):
+                 max_y = np.amax(response_y)
+
+
+            for step in range( N_t, timeSteps - N_t ):
 
                 labels[step+timeSteps*numFile] = input[step]
 
-                for n in range(0,N_i):
-                    features[step+timeSteps*numFile,n] = input[step-n-1]
                 for n in range(0,N_t):
-                    features[step+timeSteps*numFile,N_i+n] = response_y[step-n+1]
+                    features[step+timeSteps*numFile,n] = np.sin(response_y[step-n+1])
+
+                for n in range(0,N_t):
+                    features[step+timeSteps*numFile,N_t+ n] = response_ydotdot[step-n+1]
+
+
 
             # fetch next name of *.npz file to be loaded
             filename = filename.replace(str(numFile),str(numFile+1))
 
-
+    features[:,N_t:N_t+N_t] = features[:,N_t:N_t+N_t]/max_ydotdot
     with open(dataset_loc + '/'+nameOfDataset,'wb+') as filen:
 
         print('\n--------------------------------------------------------------')
@@ -104,3 +117,6 @@ if __name__ == '__main__':
 
 
     filen.close()
+
+    print('max_ydotdot :', max_ydotdot)
+    print('max_y :', max_y)

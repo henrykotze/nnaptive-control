@@ -80,13 +80,7 @@ db.close()
 
 
 def determine_system(system,wn,zeta,initial_condition):
-    if(system == 'pendulum'):
-        response = pendulum(wn,zeta,y=initial_condition*np.pi/180,time_step=dt)
-
-    elif(system =='second'):
-        response = second_order(wn,zeta,y=initial_condition)
-
-
+    response = pendulum(wn,zeta,y=initial_condition*np.pi/180,time_step=dt)
     return response
 
 def generateStepInput(responseDuration,startInput,minInput,maxInput):
@@ -105,6 +99,7 @@ def generateStepInput(responseDuration,startInput,minInput,maxInput):
         input[timestep:timestep+zeroInputDur] = 0
         timestep += zeroInputDur
 
+    input = addNoise(input,250)
     return input
 
 
@@ -133,6 +128,7 @@ def generateRampInput(responseDuration,startInput,minInput,maxInput):
         else:
             break
 
+    input = addNoise(input,250)
     return input
 
 def straightline_func(x, a, b):
@@ -165,24 +161,24 @@ def generateAccInput(responseDuration,startInput,minInput,maxInput):
             popt, pcov = curve_fit(straightline_func, x, y_)
             a = np.power(popt[0],2)
 
-            curve = np.arange(timestep,timestep+Dur)
-            curve = neg*quadratic_func(curve, a)
-
-            input[timestep:timestep+Dur] = np.transpose(np.array([curve]))
-
-            y_ = np.sqrt(np.array([magInput, 0.001]))
-            x = np.array([timestep+Dur,timestep+Dur+Dur2])
-            popt, pcov = curve_fit(straightline_func, x, y_)
-            a = popt[0]
-            curve = np.arange(timestep+Dur,timestep+Dur+Dur2)
-            curve = neg*quadratic_func(curve, a)
-            input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
-
-
-            timestep = timestep + Dur+Dur2
+            try:
+                curve = np.arange(timestep,timestep+Dur)
+                curve = neg*quadratic_func(curve, a)
+                input[timestep:timestep+Dur] = np.transpose(np.array([curve]))
+                y_ = np.sqrt(np.array([magInput, 0.001]))
+                x = np.array([timestep+Dur,timestep+Dur+Dur2])
+                popt, pcov = curve_fit(straightline_func, x, y_)
+                a = popt[0]
+                curve = np.arange(timestep+Dur,timestep+Dur+Dur2)
+                curve = neg*quadratic_func(curve, a)
+                input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
+                timestep = timestep + Dur+Dur2
+            except:
+                timestep = timestep + Dur+Dur2
         else:
             break
 
+    input = addNoise(input,250)
     return input
 
 def generateExpoInput(responseDuration,startInput,minInput,maxInput):
@@ -192,8 +188,8 @@ def generateExpoInput(responseDuration,startInput,minInput,maxInput):
     while timestep < responseDuration:
 
         magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
-        Dur = int(responseDuration/10*(np.random.random()))+10 # Duration of first half ramp
-        Dur2 = int(responseDuration/10*(np.random.random()))+10 # Duration of first half ramp
+        Dur = int(responseDuration/20*(np.random.random()))+10 # Duration of first half ramp
+        Dur2 = int(responseDuration*(np.random.random()))+20 # Duration of first half ramp
         neg = 1.0
 
         if(magInput < 0):
@@ -201,31 +197,34 @@ def generateExpoInput(responseDuration,startInput,minInput,maxInput):
             neg = -1.0
 
         if(timestep + Dur + Dur2+1 < responseDuration):
-            y_ = np.log(np.array([0.001, magInput]))
-            x = np.array([timestep+1,timestep+Dur])
-            popt, pcov = curve_fit(straightline_func, x, y_)
-            b = popt[0]
-            a = np.exp(popt[1])
 
-            curve = np.arange(timestep,timestep+Dur)
-            curve = neg*exponential_func(curve, a, b)
+            try:
+                y_ = np.log(np.array([0.01, magInput]))
+                x = np.array([timestep+1,timestep+Dur])
+                popt, pcov = curve_fit(straightline_func, x, y_)
+                b = popt[0]
+                a = np.exp(popt[1])
 
-            input[timestep:timestep+Dur] = np.transpose(np.array([curve]))
+                curve = np.arange(timestep,timestep+Dur)
+                curve = neg*exponential_func(curve, a, b)
 
-            y_ = np.log(np.array([magInput, 0.001]))
-            x = np.array([timestep+Dur,timestep+Dur+Dur2])
-            popt, pcov = curve_fit(straightline_func, x, y_)
-            b = popt[0]
-            a = np.exp(popt[1])
-            curve = np.arange(timestep+Dur,timestep+Dur+Dur2)
-            curve = neg*exponential_func(curve, a, b)
-            input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
+                input[timestep:timestep+Dur] = np.transpose(np.array([curve]))
 
+                y_ = np.log(np.array([magInput, 0.01]))
+                x = np.array([timestep+Dur,timestep+Dur+Dur2])
+                popt, pcov = curve_fit(straightline_func, x, y_)
+                b = popt[0]
+                a = np.exp(popt[1])
+                curve = np.arange(timestep+Dur,timestep+Dur+Dur2)
+                curve = neg*exponential_func(curve, a, b)
+                input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
+                timestep = timestep + Dur+Dur2
+            except:
+                timestep = timestep + Dur+Dur2
 
-            timestep = timestep + Dur+Dur2
         else:
             break
-
+    input = addNoise(input,250)
     return input
 
 def generateNoiseInput(responseDuration,startInput,minInput,maxInput):
@@ -260,17 +259,17 @@ if __name__ == '__main__':
         print('Number of responses: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
-        input_type = np.random.randint(0,3)
-        if(input_type == 0):
-            input = generateStepInput(timeSteps,inputTime,minInput,maxInput)
-        elif(input_type == 1):
-            input = generateRampInput(timeSteps,inputTime,minInput,maxInput)
-        elif(input_type == 2):
-            input =  generateCombinationInput(timeSteps,inputTime,minInput,maxInput);
+        # input_type = np.random.randint(0,3)
+        # if(input_type == 0):
+        #     input = generateStepInput(timeSteps,inputTime,minInput,maxInput)
+        # elif(input_type == 1):
+        #     input = generateRampInput(timeSteps,inputTime,minInput,maxInput)
+        # elif(input_type == 2):
+        #     input =  generateCombinationInput(timeSteps,inputTime,minInput,maxInput);
         # elif(input_type == 3):
         #     input = generateNoiseInput(timeSteps,inputTime,minInput,maxInput)
 
-        # input = generateStepInput(timeSteps,inputTime,minInput,maxInput)
+        input = generateCombinationInput(timeSteps,inputTime,minInput,maxInput)
         y = np.zeros( (timeSteps,1) )
         ydot = np.zeros( (timeSteps,1) )
         ydotdot = np.zeros( (timeSteps,1) )
