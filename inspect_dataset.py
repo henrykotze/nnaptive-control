@@ -40,7 +40,7 @@ def loadData(dir):
 
 
 
-dir = './datasets/dataset0'
+dir = './datasets/test'
 
 
 features,labels = loadData(dir)

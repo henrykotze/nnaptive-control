@@ -49,9 +49,9 @@ if(not dot):
     plt.figure(1)
     plt.plot(input,'-', mew=1, ms=8,mec='w')
     plt.plot(ydotdot,'-', mew=1, ms=8,mec='w')
-    plt.plot(ydot,'-', mew=1, ms=8,mec='w')
-    plt.plot(y,'-', mew=1, ms=8,mec='w')
-    plt.legend(['$input$','$\ddot y$','$\dot y $','$y$'])
+    # plt.plot(ydot,'-', mew=1, ms=8,mec='w')
+    # plt.plot(y,'-', mew=1, ms=8,mec='w')
+    plt.legend(['$input$','$\ddot y$'])
     plt.grid()
 else:
     plt.figure(1)

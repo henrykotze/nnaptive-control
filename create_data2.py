@@ -135,7 +135,11 @@ def straightline_func(x, a, b):
     return a*x+b
 
 def exponential_func(x, a, b):
-    return a*np.exp(b*x)
+    try:
+        y= a*np.exp(b*x)
+        return y
+    except:
+        return 0*x
 
 def quadratic_func(x,a):
     return a*np.power(x,2)
@@ -220,6 +224,7 @@ def generateExpoInput(responseDuration,startInput,minInput,maxInput):
                 input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
                 timestep = timestep + Dur+Dur2
             except:
+                print("meeeeeeeeeeeeeeeeeeeeeeeep")
                 timestep = timestep + Dur+Dur2
 
         else:

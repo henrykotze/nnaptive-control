@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser(\
 
 parser.add_argument('-loc', default='./train_data/', help='location to stored responses, default: ./train_data')
 parser.add_argument('-Nt', default=5, help='number of previous output timesteps used, default: 5')
-parser.add_argument('-Ni', default=5, help='number of previous input timesteps used, default: 5')
+parser.add_argument('-j', default=1, help='')
 parser.add_argument('-dataset_name', default='dataset0', help='name of your dataset, default: dataset*')
 parser.add_argument('-dataset_loc', default='./datasets/', help='location to store dataset: ./datasets/')
 
@@ -48,11 +48,11 @@ with shelve.open( str(dir+'/readme')) as db:
 db.close()
 
 
-N_t = int(vars(args)['Nt'])
-N_i = int(vars(args)['Ni'])
+Nt = int(vars(args)['Nt'])
 nameOfDataset = str(vars(args)['dataset_name'])
 dataset_loc = str(vars(args)['dataset_loc'])
 timeSteps = int(t/dt)
+j = int(vars(args)['j'])
 
 
 with shelve.open( str(dataset_loc + '/'+nameOfDataset+'_readme') ) as db:
@@ -69,7 +69,7 @@ db.close()
 if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
-    features = np.zeros( (timeSteps*numberSims,N_t+N_t) )   # +1 is for the input
+    features = np.zeros( (timeSteps*numberSims,Nt+Nt) )   # +1 is for the input
     labels = np.zeros( (timeSteps*numberSims,1) )
     max_y = 0
     max_ydotdot = 0
@@ -91,22 +91,22 @@ if __name__ == '__main__':
                  max_y = np.amax(response_y)
 
 
-            for step in range( N_t, timeSteps - N_t ):
+            for step in range( Nt, timeSteps - Nt ):
 
                 labels[step+timeSteps*numFile] = input[step]
 
-                for n in range(0,N_t):
+                for n in range(0,Nt):
                     features[step+timeSteps*numFile,n] = np.sin(response_y[step-n+1])
 
-                for n in range(0,N_t):
-                    features[step+timeSteps*numFile,N_t+ n] = response_ydotdot[step-n+1]
+                for n in range(0,Nt):
+                    features[step+timeSteps*numFile,Nt+ n] = response_ydotdot[step-n+1]
 
 
 
             # fetch next name of *.npz file to be loaded
             filename = filename.replace(str(numFile),str(numFile+1))
 
-    features[:,N_t:N_t+N_t] = features[:,N_t:N_t+N_t]/max_ydotdot
+    features[:,Nt:Nt+Nt] = features[:,Nt:Nt+Nt]/max_ydotdot
     with open(dataset_loc + '/'+nameOfDataset,'wb+') as filen:
 
         print('\n--------------------------------------------------------------')
