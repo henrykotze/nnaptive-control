@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
     features = np.zeros( (timeSteps*numberSims,Nt+Nt) )   # +1 is for the input
-    labels = np.zeros( (timeSteps*numberSims,1) )
+    labels = np.zeros( (timeSteps*numberSims,2) )
     max_y = 0
     max_ydotdot = 0
 
@@ -83,6 +83,7 @@ if __name__ == '__main__':
             response_y = data['y_'] # inputs from given file
             response_ydotdot = data['y_dotdot'] # inputs from given file
             input = data['input']
+            bias = data['bias']
 
             if(np.amax(response_ydotdot) > max_ydotdot):
                  max_ydotdot = np.amax(response_ydotdot)
@@ -94,14 +95,14 @@ if __name__ == '__main__':
 
             for step in range( Nt, timeSteps - Nt ):
 
-                labels[step+timeSteps*numFile] = input[step]
+                labels[step+timeSteps*numFile,0] = input[step]
+                labels[step+timeSteps*numFile,1] = bias[step]
 
                 for n in range(0,Nt):
                     features[step+timeSteps*numFile,n] = np.sin(response_y[step-n+1])
 
                 for n in range(0,Nt):
-                    features[step+timeSteps*numFile,Nt+ n] = response_ydotdot[step-n+1]
-
+                    features[step+timeSteps*numFile,Nt+n] = response_ydotdot[step-n+1]
 
 
             # fetch next name of *.npz file to be loaded

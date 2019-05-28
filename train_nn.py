@@ -116,7 +116,7 @@ def build_model(dataset):
     # layers.Dropout(0.2),\
     # layers.Dropout(0.4),\
 
-    layers.Dense(1,kernel_regularizer=keras.regularizers.l2(weight_reg))])
+    layers.Dense(2,kernel_regularizer=keras.regularizers.l2(weight_reg))])
     # ])
 
     optimizer = tf.keras.optimizers.Adam(lr=learning_rate)

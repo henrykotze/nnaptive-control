@@ -36,6 +36,7 @@ y = data['y_']
 ydot = data['y_dot']
 ydotdot = data['y_dotdot']
 input = data['input']
+bias = data['bias']
 
 
 
@@ -51,7 +52,8 @@ if(not dot):
     plt.plot(ydotdot,'-', mew=1, ms=8,mec='w')
     plt.plot(ydot,'-', mew=1, ms=8,mec='w')
     plt.plot(y,'-', mew=1, ms=8,mec='w')
-    plt.legend(['$input$','$\ddot y$','$\dot y $','$y$'])
+    plt.plot(bias,'-', mew=1, ms=8,mec='w')
+    plt.legend(['$input$','$\ddot y$','$\dot y $','$y$','bias'])
     plt.grid()
 else:
     plt.figure(1)

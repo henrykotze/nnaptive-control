@@ -114,8 +114,8 @@ def generateRampInput(responseDuration,startInput,minInput,maxInput):
 
     while timestep < responseDuration:
         magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
-        firstDur = int(responseDuration/10*(np.random.random() ) )+1 # Duration of first half ramp
-        secondDur = int(responseDuration/10*(np.random.random()) )+1 # Duration of second half ramp
+        firstDur = int(responseDuration/10*(np.random.random()))+1 # Duration of first half ramp
+        secondDur = int(responseDuration/10*(np.random.random()))+1 # Duration of second half ramp
         if(timestep + firstDur+secondDur < responseDuration):
 
             grad1 = magInput/firstDur   # gradient of first part
@@ -142,6 +142,7 @@ def exponential_func(x, a, b):
         y= a*np.exp(b*x)
         return y
     except:
+        print("meeeeeeee")
         return 0*x
 
 def quadratic_func(x,a):
@@ -181,6 +182,7 @@ def generateAccInput(responseDuration,startInput,minInput,maxInput):
                 input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
                 timestep = timestep + Dur+Dur2
             except:
+                'meeeeeee'
                 timestep = timestep + Dur+Dur2
         else:
             break
@@ -195,8 +197,8 @@ def generateExpoInput(responseDuration,startInput,minInput,maxInput):
     while timestep < responseDuration:
 
         magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
-        Dur = int(responseDuration/10*(np.random.random()))+10 # Duration of first half ramp
-        Dur2 = int(responseDuration/10*(np.random.random()))+20 # Duration of first half ramp
+        Dur = int(responseDuration/15*(np.random.random()))+10 # Duration of first half ramp
+        Dur2 = int(responseDuration/15*(np.random.random()))+20 # Duration of first half ramp
         neg = 1.0
 
         if(magInput < 0):
@@ -226,8 +228,7 @@ def generateExpoInput(responseDuration,startInput,minInput,maxInput):
                 curve = neg*exponential_func(curve, a, b)
                 input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
                 timestep = timestep + Dur+Dur2
-                # print("meeeeeeeeeeeeeeeeeeeeeeeep")
-            except:
+            except RuntimeWarning:
                 print("noooo")
                 timestep = timestep + Dur+Dur2
 
@@ -267,8 +268,11 @@ if __name__ == '__main__':
     for numSim in range(startSimNum,numberSims):
         print('Number of responses: ', numSim)
         response = determine_system(system,wn,zeta,initial)
+        if(biases):
+            bias = generateStepInput(timeSteps,inputTime,minInput/10,maxInput/10)
+        else:
+            bias = 0
 
-        bias = np.random.uniform(minInput,maxInput)
         input = generateCombinationInput(timeSteps,inputTime,minInput,maxInput)
 
         y = np.zeros( (timeSteps,1) )
@@ -285,7 +289,7 @@ if __name__ == '__main__':
                 response.update_input( input[t])
 
             elif(randomInput == 1 and biases == 1):
-                response.update_input( input[t]+bias)
+                response.update_input( input[t]+bias[t] )
 
 
             # temporary variables
