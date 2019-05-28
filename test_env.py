@@ -88,7 +88,7 @@ t = 0
 
 
 error = 0
-ref =   45 * deg2rad
+ref =   40.107 * deg2rad
 
 if __name__ == '__main__':
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     total_steps = int(np.ceil(t/dt))
     # from other branch, will need to be change
     dt = 0.01
-    total_steps = 1500
+    total_steps = 2500
     # sim_time = t
     #
 
@@ -146,17 +146,17 @@ if __name__ == '__main__':
     # pendulums = second_order(wn=wn,zeta=zeta,time_step=dt,y=theta,y_wp=wp)
 
     # Linear PID Controller
-    P=10
-    I=4
+    P=5
+    I=2
     D=0
     linear_controller = PIDcontroller(P,I,D,dt=dt)
     linear_controller_conv = PIDcontroller(P,I,D,dt=dt)
 
-    sim_time = 15
+    sim_time = 25
     while t < sim_time-dt/2:
 
         # output of nonlinear model
-        y_hat[step] = pendulums.getAllStates()[3]
+        y_hat[step] = pendulums.getAllStates()[3] + 0.1
         # output of the linear model
         y_star[step] = linearised_model.getAllStates()[3]
 
@@ -205,8 +205,7 @@ if __name__ == '__main__':
         u_hat[step] = u_nn[step]
 
 
-        # pendulums.update_input(u_hat[step])
-        pendulums.update_input(u_nn[step])
+        pendulums.update_input(u_hat[step])
         pendulums.step()
 
 
@@ -240,11 +239,11 @@ plt.title('Error signal')
 
 
 plt.figure(4)
-# plt.plot(u_nn,'-', mew=1, ms=8,mec='w')
+plt.plot(u_nn,'-', mew=1, ms=8,mec='w')
 plt.plot(u_star,'-', mew=1, ms=8,mec='w')
 plt.plot(u_hat,'-', mew=1, ms=8,mec='w')
 plt.grid()
-plt.legend(['$u^{*}$','$\hat u$'])
+plt.legend(['$u_{NN}$','$u^{*}$','$\hat u$'])
 
 
 plt.figure(5)

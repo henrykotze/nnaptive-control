@@ -37,6 +37,7 @@ parser.add_argument('-maxInput', default=0.5, help='maximum input given to syste
 parser.add_argument('-minInput', default=-0.5, help='minimum input given to system')
 parser.add_argument('-noise', default=0, help='use a noise pendulum system')
 parser.add_argument('-randomInput', default=0, help='use a noise pendulum system')
+parser.add_argument('-biases', default=0, help='add biases to the inputs')
 
 
 
@@ -59,6 +60,7 @@ maxInput = float(vars(args)['maxInput'])
 minInput = float(vars(args)['minInput'])
 noise = int(vars(args)['noise'])
 randomInput = int(vars(args)['randomInput'])
+biases = int(vars(args)['biases'])
 
 
 
@@ -77,6 +79,7 @@ with shelve.open( str(dir+'/readme') ) as db:
     for arg in vars(args):
         db[arg] = getattr(args,arg)
 db.close()
+
 
 
 def determine_system(system,wn,zeta,initial_condition):
@@ -192,8 +195,8 @@ def generateExpoInput(responseDuration,startInput,minInput,maxInput):
     while timestep < responseDuration:
 
         magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
-        Dur = int(responseDuration/20*(np.random.random()))+10 # Duration of first half ramp
-        Dur2 = int(responseDuration*(np.random.random()))+20 # Duration of first half ramp
+        Dur = int(responseDuration/10*(np.random.random()))+10 # Duration of first half ramp
+        Dur2 = int(responseDuration/10*(np.random.random()))+20 # Duration of first half ramp
         neg = 1.0
 
         if(magInput < 0):
@@ -223,8 +226,9 @@ def generateExpoInput(responseDuration,startInput,minInput,maxInput):
                 curve = neg*exponential_func(curve, a, b)
                 input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
                 timestep = timestep + Dur+Dur2
+                # print("meeeeeeeeeeeeeeeeeeeeeeeep")
             except:
-                print("meeeeeeeeeeeeeeeeeeeeeeeep")
+                print("noooo")
                 timestep = timestep + Dur+Dur2
 
         else:
@@ -264,17 +268,9 @@ if __name__ == '__main__':
         print('Number of responses: ', numSim)
         response = determine_system(system,wn,zeta,initial)
 
-        # input_type = np.random.randint(0,3)
-        # if(input_type == 0):
-        #     input = generateStepInput(timeSteps,inputTime,minInput,maxInput)
-        # elif(input_type == 1):
-        #     input = generateRampInput(timeSteps,inputTime,minInput,maxInput)
-        # elif(input_type == 2):
-        #     input =  generateCombinationInput(timeSteps,inputTime,minInput,maxInput);
-        # elif(input_type == 3):
-        #     input = generateNoiseInput(timeSteps,inputTime,minInput,maxInput)
-
+        bias = np.random.uniform(minInput,maxInput)
         input = generateCombinationInput(timeSteps,inputTime,minInput,maxInput)
+
         y = np.zeros( (timeSteps,1) )
         ydot = np.zeros( (timeSteps,1) )
         ydotdot = np.zeros( (timeSteps,1) )
@@ -284,11 +280,12 @@ if __name__ == '__main__':
             if(t == inputTime and randomInput == 0):
                 if(randomMag == 0):
                     response.update_input(inputMag)
-                else:
-                    response.update_input(np.random.uniform(minInput,maxInput))
 
-            elif(randomInput == 1):
-                response.update_input( input[t] )
+            elif(randomInput == 1 and biases == 0):
+                response.update_input( input[t])
+
+            elif(randomInput == 1 and biases == 1):
+                response.update_input( input[t]+bias)
 
 
             # temporary variables
@@ -307,7 +304,7 @@ if __name__ == '__main__':
 
         # Saves response in *.npz file
         # print(system)
-        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system_info))
+        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system_info),bias=bias)
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))

@@ -45,6 +45,7 @@ with shelve.open( str(dir+'/readme')) as db:
     dt = float(db['dt'])
     numberSims = int(db['numSim'])
     filename = db['filename']
+    biases = db['biases']
 db.close()
 
 
