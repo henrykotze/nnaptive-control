@@ -23,9 +23,9 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-loc', default='./train_data/', help='location to stored responses, default: ./train_data')
+parser.add_argument('-loc', default='./biased_train_data/', help='location to stored responses, default: ./train_data')
 parser.add_argument('-Nt', default=5, help='number of previous output timesteps used, default: 5')
-parser.add_argument('-dataset_name', default='dataset0', help='name of your dataset, default: dataset*')
+parser.add_argument('-dataset_name', default='biased_dataset0', help='name of your dataset, default: dataset*')
 parser.add_argument('-dataset_loc', default='./datasets/', help='location to store dataset: ./datasets/')
 
 
@@ -45,6 +45,7 @@ with shelve.open( str(dir+'/readme')) as db:
     numberSims = int(db['numSim'])
     filename = db['filename']
     bias_activated = int(db['biases'])
+    maxInput = float(db['maxInput'])
 db.close()
 
 if(not bias_activated):
@@ -73,15 +74,15 @@ db.close()
 if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
-    features = np.zeros( (timeSteps*numberSims,2*N_t) )   # +1 is for the input
-    labels = np.zeros( (timeSteps*numberSims,2) )
+    features = np.zeros( (timeSteps*numberSims,3*N_t) )   # +1 is for the input
+    labels = np.zeros( (timeSteps*numberSims,1) )
     max_input = 0
 
     for numFile in range(numberSims):
         with np.load(str(dir+'/'+filename)) as data:
             print('Loading Data from: ', filename)
 
-            biased_response_y = data['y_'] # inputs from given file
+            biased_response_y = data['biased_y'] # inputs from given file
             response_y = data['y_'] # inputs from given file
             input = data['input']
             bias = data['bias']
@@ -90,21 +91,19 @@ if __name__ == '__main__':
                  max_input = np.amax(input)
 
             for step in range( N_t, timeSteps- N_t ):
-
-                labels[step+t*numFile,0] = response_y[step+1]
-                labels[step+t*numFile,1] = bias[step]
+                # print(bias[step])
+                labels[step+t*numFile,0] = bias[step]
 
                 for n in range(0,N_t):
-                    features[step+timeSteps*numFile,n] = input[step-n]
+                    features[step+timeSteps*numFile,n] = input[step-n]/maxInput
                 for n in range(0,N_t):
                     features[step+timeSteps*numFile,N_t+n] = np.sin(response_y[step-n])
+                for n in range(0,N_t):
+                    features[step+timeSteps*numFile,2*N_t+n] = np.sin(biased_response_y[step-n])
 
             # fetch next name of *.npz file to be loaded
             filename = filename.replace(str(numFile),str(numFile+1))
 
-
-    features[:,0:N_t] = features[:,0:N_t]/max_input
-    print(max_input)
 
 
     with open(dataset_loc + '/'+nameOfDataset,'wb+') as filen:

@@ -2,4 +2,6 @@ datasets/*
 val_data/*
 trained_models/*
 train_data/*
+biased_train_data/*
+biased_val_data/*
 __pycache__/

@@ -20,8 +20,10 @@ parser = argparse.ArgumentParser(\
 
 
 parser.add_argument('-n', default=3, help='number of pairs to show')
+parser.add_argument('-name', default=3, help='name of dataset')
 args = parser.parse_args()
 n = int(vars(args)['n'])
+name = str(vars(args)['name'])
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -40,7 +42,7 @@ def loadData(dir):
 
 
 
-dir = './datasets/test'
+dir = './datasets/' + name
 
 
 features,labels = loadData(dir)

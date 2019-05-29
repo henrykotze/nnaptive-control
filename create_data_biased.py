@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser(\
 
 parser.add_argument('-zeta', default = 1, help='the damping ratio the response, default: 1')
 parser.add_argument('-wn', default= 2, help='the natural frequency of the response, default: 2')
-parser.add_argument('-loc', default='./train_data/', help='location to store responses, default: ./train_data')
+parser.add_argument('-loc', default='./biased_train_data/', help='location to store responses, default: ./train_data')
 parser.add_argument('-filename', default="response-0.npz", help='filename, default: response-0.npz')
 parser.add_argument('-t', default=10, help='time lenght of responses, default: 10s')
 parser.add_argument('-numSim', default=2, help='number of responses to generate, default: 1')
@@ -108,6 +108,25 @@ def generateStepInput(responseDuration,startInput,minInput,maxInput):
     return input
 
 
+def generateBiasInput(responseDuration,startInput,minInput,maxInput):
+
+    input = np.zeros( (responseDuration,1) )
+    timestep = startInput
+
+    while timestep < responseDuration:
+        magInput = (maxInput-minInput)*np.random.random()+minInput # Magnitude Size of Input
+        inputDur = int(responseDuration/10*(np.random.random() ) ) # Duration of input
+        zeroInputDur = int(responseDuration/10*(np.random.random()) ) # Duration of zero input
+
+
+        input[timestep:timestep+inputDur] = magInput
+        timestep += inputDur
+        input[timestep:timestep+zeroInputDur] = 0
+        timestep += zeroInputDur
+
+    return input
+
+
 
 def generateRampInput(responseDuration,startInput,minInput,maxInput):
 
@@ -150,7 +169,6 @@ def exponential_func(x, a, b):
 
 def quadratic_func(x,a):
     return a*np.power(x,2)
-
 
 def generateExpoInput(responseDuration,startInput,minInput,maxInput):
     input = np.zeros( (responseDuration,1) )
@@ -232,7 +250,7 @@ if __name__ == '__main__':
         biased_response = pendulum(wn,zeta,y=initial*np.pi/180,time_step=dt)
 
         if(biases):
-            bias = generateStepInput(timeSteps,inputTime,minInput/10,maxInput/10)
+            bias = generateBiasInput(timeSteps,inputTime,minInput/10,maxInput/10)
         else:
             bias = 0
 
@@ -268,7 +286,6 @@ if __name__ == '__main__':
             ydotdot[t] = t2
 
             t1,t2,t3,t4 = biased_response.getAllStates()
-            biased_input[t] = t1
             biased_y[t] = t4
             biased_ydot[t] = t3
             biased_ydotdot[t] = t2
@@ -286,7 +303,7 @@ if __name__ == '__main__':
         # Saves response in *.npz file
         # print(system)
         np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system_info),bias=bias,
-        biased_input=biased_input,biased_y=biased_y,biased_y_dot=biased_ydot,biased_y_dotdot=biased_ydotdot)
+        biased_y=biased_y,biased_y_dot=biased_ydot,biased_y_dotdot=biased_ydotdot)
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))

@@ -39,7 +39,6 @@ parser.add_argument('-maxInput', default=0.5, help='maximum input given to syste
 parser.add_argument('-minInput', default=-0.5, help='minimum input given to system')
 parser.add_argument('-noise', default=0, help='use a noise pendulum system')
 parser.add_argument('-randomInput', default=0, help='use a noise pendulum system')
-parser.add_argument('-biases', default=0, help='add biases to the inputs')
 
 
 
@@ -62,7 +61,6 @@ maxInput = float(vars(args)['maxInput'])
 minInput = float(vars(args)['minInput'])
 noise = int(vars(args)['noise'])
 randomInput = int(vars(args)['randomInput'])
-biases = int(vars(args)['biases'])
 
 
 
@@ -230,11 +228,6 @@ if __name__ == '__main__':
         # response = determine_system(system,wn,zeta,initial)
         response = pendulum(wn,zeta,y=initial*np.pi/180,time_step=dt)
 
-        if(biases):
-            bias = generateStepInput(timeSteps,inputTime,minInput/10,maxInput/10)
-        else:
-            bias = 0
-
         input = generateCombinationInput(timeSteps,inputTime,minInput,maxInput)
 
         y = np.zeros( (timeSteps,1) )
@@ -247,11 +240,9 @@ if __name__ == '__main__':
                 if(randomMag == 0):
                     response.update_input(inputMag)
 
-            elif(randomInput == 1 and biases == 0):
+            elif(randomInput == 1):
                 response.update_input( input[t])
 
-            elif(randomInput == 1 and biases == 1):
-                response.update_input( input[t]+bias[t] )
 
 
             # temporary variables
