@@ -12,6 +12,8 @@ import os
 import pickle
 import shelve
 from scipy.optimize import curve_fit
+from scipy.optimize import OptimizeWarning
+import warnings
 
 parser = argparse.ArgumentParser(\
         prog='create data 2nd order',\
@@ -138,88 +140,47 @@ def straightline_func(x, a, b):
     return a*x+b
 
 def exponential_func(x, a, b):
-    try:
-        y= a*np.exp(b*x)
-        return y
-    except:
-        print("meeeeeeee")
-        return 0*x
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error")
+        try:
+            y= a*np.exp(b*x)
+            return y
+        except:
+            return 0*x
 
 def quadratic_func(x,a):
     return a*np.power(x,2)
 
-def generateAccInput(responseDuration,startInput,minInput,maxInput):
-    input = np.zeros( (responseDuration,1) )
-    timestep = startInput
-
-    while timestep < responseDuration:
-
-        magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
-        Dur = int(responseDuration/10*(np.random.random()))+10 # Duration of first half ramp
-        Dur2 = int(responseDuration/10*(np.random.random()))+10 # Duration of first half ramp
-        neg = 1.0
-
-        if(magInput < 0):
-            magInput = -1*magInput
-            neg = -1.0
-
-        if(timestep + Dur + Dur2+1 < responseDuration):
-            y_ = np.sqrt(np.array([0.00001, magInput]))
-            x = np.array([timestep+1,timestep+Dur])
-            popt, pcov = curve_fit(straightline_func, x, y_)
-            a = np.power(popt[0],2)
-
-            try:
-                curve = np.arange(timestep,timestep+Dur)
-                curve = neg*quadratic_func(curve, a)
-                input[timestep:timestep+Dur] = np.transpose(np.array([curve]))
-                y_ = np.sqrt(np.array([magInput, 0.001]))
-                x = np.array([timestep+Dur,timestep+Dur+Dur2])
-                popt, pcov = curve_fit(straightline_func, x, y_)
-                a = popt[0]
-                curve = np.arange(timestep+Dur,timestep+Dur+Dur2)
-                curve = neg*quadratic_func(curve, a)
-                input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
-                timestep = timestep + Dur+Dur2
-            except:
-                'meeeeeee'
-                timestep = timestep + Dur+Dur2
-        else:
-            break
-
-    input = addNoise(input,250)
-    return input
 
 def generateExpoInput(responseDuration,startInput,minInput,maxInput):
     input = np.zeros( (responseDuration,1) )
     timestep = startInput
+    error_check = 0
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        while timestep < responseDuration:
 
-    while timestep < responseDuration:
+            magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
+            Dur = int(responseDuration/10*(np.random.random())) # Duration of first half expo
+            Dur2 = int(responseDuration/10*(np.random.random()))+20 # Duration of second half expo
+            neg = 1.0
 
-        magInput = (maxInput-minInput)*np.random.random()+minInput # peak point in ramp
-        Dur = int(responseDuration/15*(np.random.random()))+10 # Duration of first half ramp
-        Dur2 = int(responseDuration/15*(np.random.random()))+20 # Duration of first half ramp
-        neg = 1.0
+            if(magInput < 0):
+                magInput = -1*magInput
+                neg = -1.0
 
-        if(magInput < 0):
-            magInput = -1*magInput
-            neg = -1.0
+            if(timestep + Dur + Dur2+1 < responseDuration):
 
-        if(timestep + Dur + Dur2+1 < responseDuration):
-
-            try:
-                y_ = np.log(np.array([0.01, magInput]))
+                y_ = np.log(np.array([0.1, magInput]))
                 x = np.array([timestep+1,timestep+Dur])
                 popt, pcov = curve_fit(straightline_func, x, y_)
                 b = popt[0]
                 a = np.exp(popt[1])
-
                 curve = np.arange(timestep,timestep+Dur)
                 curve = neg*exponential_func(curve, a, b)
-
                 input[timestep:timestep+Dur] = np.transpose(np.array([curve]))
 
-                y_ = np.log(np.array([magInput, 0.01]))
+                y_ = np.log(np.array([magInput, 0.1]))
                 x = np.array([timestep+Dur,timestep+Dur+Dur2])
                 popt, pcov = curve_fit(straightline_func, x, y_)
                 b = popt[0]
@@ -227,14 +188,13 @@ def generateExpoInput(responseDuration,startInput,minInput,maxInput):
                 curve = np.arange(timestep+Dur,timestep+Dur+Dur2)
                 curve = neg*exponential_func(curve, a, b)
                 input[timestep+Dur:timestep+Dur+Dur2] = np.transpose(np.array([curve]))
-                timestep = timestep + Dur+Dur2
-            except RuntimeWarning:
-                print("noooo")
+
                 timestep = timestep + Dur+Dur2
 
-        else:
-            break
-    input = addNoise(input,250)
+
+            else:
+                break
+        input = addNoise(input,250)
     return input
 
 def generateNoiseInput(responseDuration,startInput,minInput,maxInput):
@@ -267,7 +227,9 @@ if __name__ == '__main__':
 
     for numSim in range(startSimNum,numberSims):
         print('Number of responses: ', numSim)
-        response = determine_system(system,wn,zeta,initial)
+        # response = determine_system(system,wn,zeta,initial)
+        response = pendulum(wn,zeta,y=initial*np.pi/180,time_step=dt)
+
         if(biases):
             bias = generateStepInput(timeSteps,inputTime,minInput/10,maxInput/10)
         else:

@@ -44,7 +44,12 @@ with shelve.open( str(dir+'/readme')) as db:
     dt = float(db['dt'])
     numberSims = int(db['numSim'])
     filename = db['filename']
+    bias_activated = int(db['biases'])
 db.close()
+
+if(not bias_activated):
+    raise Exception('The data being loaded does not contain an bias')
+
 
 
 N_t = int(vars(args)['Nt'])
@@ -69,15 +74,15 @@ if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
     features = np.zeros( (timeSteps*numberSims,2*N_t) )   # +1 is for the input
-    labels = np.zeros( (timeSteps*numberSims,1) )
+    labels = np.zeros( (timeSteps*numberSims,2) )
     max_input = 0
 
     for numFile in range(numberSims):
         with np.load(str(dir+'/'+filename)) as data:
             print('Loading Data from: ', filename)
 
+            biased_response_y = data['y_'] # inputs from given file
             response_y = data['y_'] # inputs from given file
-            response_ydot = data['y_dot'] # inputs from given file
             input = data['input']
             bias = data['bias']
 
@@ -87,6 +92,7 @@ if __name__ == '__main__':
             for step in range( N_t, timeSteps- N_t ):
 
                 labels[step+t*numFile,0] = response_y[step+1]
+                labels[step+t*numFile,1] = bias[step]
 
                 for n in range(0,N_t):
                     features[step+timeSteps*numFile,n] = input[step-n]
