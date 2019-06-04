@@ -114,9 +114,9 @@ def generateBiasInput(responseDuration,startInput,minInput,maxInput):
     timestep = startInput
 
     while timestep < responseDuration:
-        magInput = (maxInput-minInput)*np.random.random()+minInput # Magnitude Size of Input
-        inputDur = int(responseDuration/10*(np.random.random() ) ) # Duration of input
-        zeroInputDur = int(responseDuration/10*(np.random.random()) ) # Duration of zero input
+        magInput = (maxInput)*np.random.random()+maxInput # Magnitude Size of Input
+        inputDur = int(responseDuration/5*(np.random.random() ) ) # Duration of input
+        zeroInputDur = int(responseDuration/5*(np.random.random()) ) # Duration of zero input
 
 
         input[timestep:timestep+inputDur] = magInput
@@ -250,7 +250,7 @@ if __name__ == '__main__':
         biased_response = pendulum(wn,zeta,y=initial*np.pi/180,time_step=dt)
 
         if(biases):
-            bias = generateBiasInput(timeSteps,inputTime,minInput/10,maxInput/10)
+            bias = generateCombinationInput(timeSteps,inputTime,minInput/10,maxInput/10)
         else:
             bias = 0
 

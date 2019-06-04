@@ -74,9 +74,11 @@ db.close()
 if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
-    features = np.zeros( (timeSteps*numberSims,3*N_t) )   # +1 is for the input
+    features = np.zeros( (timeSteps*numberSims,5*N_t) )   # +1 is for the input
     labels = np.zeros( (timeSteps*numberSims,1) )
     max_input = 0
+    max_bias_ydotdot = 0
+    max_ydotdot = 0
 
     for numFile in range(numberSims):
         with np.load(str(dir+'/'+filename)) as data:
@@ -84,15 +86,24 @@ if __name__ == '__main__':
 
             biased_response_y = data['biased_y'] # inputs from given file
             response_y = data['y_'] # inputs from given file
+
+            biased_response_y_dotdot = data['biased_y_dotdot'] # inputs from given file
+            response_y_dotdot = data['y_dotdot'] # inputs from given file
+
             input = data['input']
             bias = data['bias']
 
             if(np.amax(input) > max_input):
                  max_input = np.amax(input)
 
+            if(np.amax(biased_response_y_dotdot) > max_bias_ydotdot):
+                 max_bias_ydotdot = np.amax(biased_response_y_dotdot)
+
+            if(np.amax(response_y_dotdot) > max_ydotdot):
+                 max_ydotdot = np.amax(response_y_dotdot)
+
             for step in range( N_t, timeSteps- N_t ):
-                # print(bias[step])
-                labels[step+t*numFile,0] = bias[step]
+                labels[step+timeSteps*numFile,0] = bias[step]
 
                 for n in range(0,N_t):
                     features[step+timeSteps*numFile,n] = input[step-n]/maxInput
@@ -100,11 +111,22 @@ if __name__ == '__main__':
                     features[step+timeSteps*numFile,N_t+n] = np.sin(response_y[step-n])
                 for n in range(0,N_t):
                     features[step+timeSteps*numFile,2*N_t+n] = np.sin(biased_response_y[step-n])
+                for n in range(0,N_t):
+                    features[step+timeSteps*numFile,3*N_t+n] = response_y_dotdot[step-n]
+                for n in range(0,N_t):
+                    features[step+timeSteps*numFile,4*N_t+n] = biased_response_y_dotdot[step-n]
 
             # fetch next name of *.npz file to be loaded
             filename = filename.replace(str(numFile),str(numFile+1))
 
 
+    features[:,3*N_t:3*N_t+N_t] = features[:,3*N_t:3*N_t+N_t]/max_ydotdot
+    features[:,4*N_t:4*N_t+N_t] = features[:,4*N_t:4*N_t+N_t]/max_bias_ydotdot
+
+
+
+    print('max_bias_ydotdot: ', max_bias_ydotdot)
+    print('max_ydotdot: ', max_ydotdot)
 
     with open(dataset_loc + '/'+nameOfDataset,'wb+') as filen:
 

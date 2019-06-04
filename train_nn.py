@@ -106,10 +106,10 @@ def build_model(dataset):
 
     model = keras.Sequential([
     # layers.Flatten(input_shape=(4,)),\
-    layers.Dense(100,kernel_regularizer=keras.regularizers.l2(weight_reg),input_shape=dataset.output_shapes[0] ), \
+    layers.Dense(500,kernel_regularizer=keras.regularizers.l2(weight_reg),input_shape=dataset.output_shapes[0] ), \
     layers.ReLU(),\
     # layers.Dropout(0.4),\
-    layers.Dense(100,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
+    layers.Dense(500,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
     layers.ReLU(),\
     # layers.Dense(20,kernel_regularizer=keras.regularizers.l2(weight_reg)),\
     # layers.ReLU(),\
@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
     # Setting up an empty dataset to load the data into
     [dataset,features,labels] = loadData(dataset_path)
-    [dataset_val,features_val,labels_val] = loadData(validation_path)
+    # [dataset_val,features_val,labels_val] = loadData(validation_path)
 
 
 
@@ -231,8 +231,8 @@ if __name__ == '__main__':
 
     # Learning of Model
     history = model.fit(features, labels, epochs=epochs, \
-    validation_data=(features_val,labels_val), verbose=1, callbacks=[tbCallBack,cp_callback])
-    # validation_split=0.1, verbose=1, callbacks=[TrainValTensorBoard(log_dir=logdir, write_graph=False)])
+    # validation_data=(features_val,labels_val), verbose=1, callbacks=[tbCallBack,cp_callback])
+    validation_split=0.1, verbose=1, callbacks=[tbCallBack,cp_callback])
     # validation_data=(features_val,labels_val),verbose=1,callbacks=[TrainValTensorBoard(log_dir=logdir, write_graph=False)])
 
     # plot_history(history)
