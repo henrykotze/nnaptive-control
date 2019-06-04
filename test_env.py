@@ -37,12 +37,30 @@ wp = float(vars(args)['wp'])
 theta = wp + float(vars(args)['init'])
 
 
+def getReadmePath(path):
+    readme = ''
+    if 'checkpoints' in path:
+        dirs = path.split('/')
+        pos = dirs.index("checkpoints")
+        for i in range(0,pos):
+            readme += dirs[i] + '/'
+
+    else:
+        dirs = path.split('/')
+        pos = dirs.index("nn_mdl")
+        for i in range(0,pos):
+            readme += dirs[i] + '/'
+
+    readme += 'readme'
+    return readme
+
+model_readme = getReadmePath(model_path)
 
 
 print('----------------------------------------------------------------')
-print('Fetching training info from: ', str(dir+'/readme'))
+print('Fetching training info from: ', model_readme)
 print('----------------------------------------------------------------')
-with shelve.open( str(dir+'/readme')) as db:
+with shelve.open(model_readme) as db:
     zeta=float((db)['zeta'])
     wn=float((db)['wn'])
     sim_time = int((db)['t'])
@@ -54,7 +72,7 @@ db.close()
 print('----------------------------------------------------------------')
 print('Training Information: ')
 print('----------------------------------------------------------------')
-with shelve.open(str(dir+'/readme')) as db:
+with shelve.open(model_readme) as db:
     for key,value in db.items():
         print("{}: {}".format(key, value))
 db.close()

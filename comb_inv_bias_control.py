@@ -19,7 +19,6 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-loc', default='./biased_train_data/', help='location to store responses, default: ./train_data')
 parser.add_argument('-init', default=0, help='offset from working point')
 parser.add_argument('-wp', default=0, help='working point')
 parser.add_argument('-bias_model_path', default='./nn_mdl', help='path to neural network model')
@@ -31,6 +30,66 @@ args = parser.parse_args()
 bias_model_path = vars(args)['bias_model_path']
 inv_model_path = vars(args)['inv_model_path']
 
+def getReadmePath(path):
+
+    if 'checkpoints' in path:
+        dirs = path.split('/')
+        pos = dirs.index("checkpoints")
+        for i in range(0,pos):
+            readme += dirs[i] + '/'
+
+    else:
+        dirs = path.split('/')
+        pos = dirs.index("nn_mdl")
+        for i in range(0,pos):
+            readme += dirs[i] + '/'
+
+    readme += 'readme'
+    return readme
+
+
+def compareBiasAndInvTraining(inv_readme, bias_readme):
+    zeta_inv = 0
+    wn_inv = 0
+    dt_inv = 0
+    maxInput_inv = 0
+
+    zeta_bias = 0
+    wn_bias = 0
+    dt_bias = 0
+    maxInput_bias = 0
+
+    with shelve.open(inv_readme) as db:
+
+        zeta_inv=float((db)['zeta'])
+        wn_inv=float((db)['wn'])
+        dt_inv = float((db)['dt'])
+        maxInput_inv = float((db)['maxInput'])
+
+    db.close()
+
+    with shelve.open(bias_readme) as db:
+
+        zeta_bias=float((db)['zeta'])
+        wn_bias=float((db)['wn'])
+        dt_bias = float((db)['dt'])
+        maxInput_bias = float((db)['maxInput'])
+
+    db.close()
+
+    if(zeta_inv == zeta_bias and wn_inv == wn_bias and dt_inv == dt_bias and maxInput_inv == maxInput_bias):
+        return True
+    else:
+        return False
+
+
+
+
+bias_model_readme = getReadmePath(bias_model_path)
+inv_model_readme = getReadmePath(inv_model_path)
+
+
+
 dir = vars(args)['loc']
 
 # Working point
@@ -39,12 +98,18 @@ wp = float(vars(args)['wp'])
 theta = wp + float(vars(args)['init'])
 
 
+if(compareBiasAndInvTraining(inv_model_readme,bias_model_readme)):
+    pass:
+else:
+    raise Exception("Training Data of bias model and inverse model differ")
+
+
 
 
 print('----------------------------------------------------------------')
-print('Fetching training info from: ', str(dir+'/readme'))
+print('Fetching training info from: ', inv_model_readme)
 print('----------------------------------------------------------------')
-with shelve.open( str(dir+'/readme')) as db:
+with shelve.open( inv_model_readme) as db:
     zeta=float((db)['zeta'])
     wn=float((db)['wn'])
     sim_time = int((db)['t'])
@@ -57,7 +122,7 @@ db.close()
 print('----------------------------------------------------------------')
 print('Training Information: ')
 print('----------------------------------------------------------------')
-with shelve.open(str(dir+'/readme')) as db:
+with shelve.open(inv_model_readme) as db:
     for key,value in db.items():
         print("{}: {}".format(key, value))
 db.close()
@@ -68,7 +133,7 @@ print('----------------------------------------------------------------')
 
 
 print('------------------------------------------------------------------------------------------------------')
-print('Fetching neural network model from: ', str(model_path ))
+print('Fetching neural network model from: ')
 print('------------------------------------------------------------------------------------------------------')
 
 inv_nn_model = keras.models.load_model(str(inv_model_path))
@@ -95,7 +160,7 @@ bias = bias_data['bias']
 
 
 
-def invModel(y_ref,y_dotdot_ref,inv_model,nn_input):
+def invModel(y_ref,y_dotdot_ref,inv_model,nn_input_matrix):
 
     nn_input_matrix = np.roll(nn_input_matrix,1) # move elements one timestep back
     # insert new timestep
@@ -203,32 +268,9 @@ if __name__ == '__main__':
         y_dotdot_ref = linearised_model.getAllStates()[1]
 
 
-        inv_nn_input_matrix = np.roll(inv_nn_input_matrix,1) # move elements one timestep back
-        # insert new timestep
-        inv_nn_input_matrix[0,0] = np.sin(y_ref)
-        inv_nn_input_matrix[0,100] = y_dotdot_ref/7.388943895921088
-        # reshape
-        # print(nn_input_matrix)
-        inv_nn_input = inv_nn_input_matrix[0].reshape((1,200))
-        inv_nn_output = inv_nn_model.predict(nn_input)
+        [control_input,inv_nn_input_matrix] = invModel(y_ref,y_dotdot_ref,inv_nn_model,inv_nn_input_matrix):
 
-
-
-        bias_nn_input_matrix = np.roll(bias_nn_input_matrix,1) # move elements one timestep back
-
-        # insert new timestep
-        bias_nn_input_matrix[0,0] = input[step]/8
-        bias_nn_input_matrix[0,100] = np.sin(y_hat[step])
-        bias_nn_input_matrix[0,200] = np.sin(biased_y_hat[step])
-        bias_nn_input_matrix[0,300] =  y_hat_dotdot[step]/6.017502740394413
-        bias_nn_input_matrix[0,400] = biased_y_hat_dotdot[step]/6.156157104064169
-
-        # reshape
-        # print(nn_input_matrix)
-        bias_nn_input = bias_nn_input_matrix[0].reshape((1,500))
-
-        bias_nn_output = bias_nn_model.predict(nn_input)
-
+        [bias_nn_output, bias_nn_input_matrix] = biasIdentification(control_input,y_hat,y_hat_dotdot,y_biased,y_ddt_biased,bias_nn_input_matrix,bias_nn_model):
         bias_pred[step] = bias_nn_output
 
         pendulums.update_input(input[step])

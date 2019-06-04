@@ -19,7 +19,6 @@ parser = argparse.ArgumentParser(\
         )
 
 
-parser.add_argument('-loc', default='./biased_train_data/', help='location to store responses, default: ./train_data')
 parser.add_argument('-init', default=0, help='offset from working point')
 parser.add_argument('-wp', default=0, help='working point')
 parser.add_argument('-model_path', default='./nn_mdl', help='path to neural network model')
@@ -29,20 +28,37 @@ args = parser.parse_args()
 
 model_path = vars(args)['model_path']
 
-dir = vars(args)['loc']
+# dir = vars(args)['loc']
 
 # Working point
 wp = float(vars(args)['wp'])
 # initial conditions of pendulum
 theta = wp + float(vars(args)['init'])
 
+def getReadmePath(path):
+    readme = ''
+    if 'checkpoints' in path:
+        dirs = path.split('/')
+        pos = dirs.index("checkpoints")
+        for i in range(0,pos):
+            readme += dirs[i] + '/'
 
+    else:
+        dirs = path.split('/')
+        pos = dirs.index("nn_mdl")
+        for i in range(0,pos):
+            readme += dirs[i] + '/'
+
+    readme += 'readme'
+    return readme
+
+model_readme = getReadmePath(model_path)
 
 
 print('----------------------------------------------------------------')
-print('Fetching training info from: ', str(dir+'/readme'))
+print('Fetching training info from: ',model_readme)
 print('----------------------------------------------------------------')
-with shelve.open( str(dir+'/readme')) as db:
+with shelve.open( model_readme) as db:
     zeta=float((db)['zeta'])
     wn=float((db)['wn'])
     sim_time = int((db)['t'])
@@ -55,7 +71,7 @@ db.close()
 print('----------------------------------------------------------------')
 print('Training Information: ')
 print('----------------------------------------------------------------')
-with shelve.open(str(dir+'/readme')) as db:
+with shelve.open(model_readme) as db:
     for key,value in db.items():
         print("{}: {}".format(key, value))
 db.close()
@@ -84,7 +100,7 @@ wp = wp*deg2rad
 theta = 0*deg2rad
 
 
-data = np.load('./biased_val_data/response-1.npz')
+data = np.load('./biased_val_data/response-10.npz')
 bias = data['bias']
 input = data['input']
 
