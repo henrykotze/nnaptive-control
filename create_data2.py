@@ -261,7 +261,7 @@ if __name__ == '__main__':
 
         # Saves response in *.npz file
         # print(system)
-        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system_info),bias=bias)
+        np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system_info))
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))

@@ -100,10 +100,9 @@ wp = wp*deg2rad
 theta = 0*deg2rad
 
 
-data = np.load('./biased_val_data/response-10.npz')
+data = np.load('./biased_train_data/response-10.npz')
 bias = data['bias']
 input = data['input']
-
 
 if __name__ == '__main__':
 

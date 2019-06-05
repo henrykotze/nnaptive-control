@@ -44,7 +44,6 @@ with shelve.open( str(dir+'/readme')) as db:
     dt = float(db['dt'])
     numberSims = int(db['numSim'])
     filename = db['filename']
-    biases = db['biases']
 db.close()
 
 
@@ -81,7 +80,6 @@ if __name__ == '__main__':
             response_y = data['y_'] # inputs from given file
             response_ydotdot = data['y_dotdot'] # inputs from given file
             input = data['input']
-            bias = data['bias']
 
             if(np.amax(response_ydotdot) > max_ydotdot):
                  max_ydotdot = np.amax(response_ydotdot)
@@ -119,3 +117,9 @@ if __name__ == '__main__':
 
     print('max_ydotdot :', max_ydotdot)
     print('max_y :', max_y)
+
+
+    with shelve.open( str(dataset_loc + '/'+nameOfDataset+'_readme')) as db:
+        db['max_ydotdot'] = max_ydotdot
+        db['max_y'] = max_y
+    db.close()

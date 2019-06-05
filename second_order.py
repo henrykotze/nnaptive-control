@@ -52,7 +52,7 @@ class second_order:
 
 
     def getAllStates(self):
-        return np.r_[self.input, self.ydotdot,self.ydot,self.y]
+        return np.array([self.input, self.ydotdot,self.ydot,self.y])
 
     def getEstimatedStates(self):
         return np.r_[self.ydotdot,self.ydot,self.y]
