@@ -26,7 +26,7 @@ dir = vars(args)['loc']
 filename = vars(args)['loc']+'/'+vars(args)['filename']
 number = int(vars(args)['n'])
 dot = int(vars(args)['dot'])
-# biased = int(vars(args)['biased'])
+biased = int(vars(args)['biased'])
 
 filename = filename.replace(str(0),str(number))
 print("Plotting Response of file: ", filename)
@@ -38,12 +38,13 @@ y = data['y_']
 ydot = data['y_dot']
 ydotdot = data['y_dotdot']
 input = data['input']
-# bias = data['bias']
+bias = data['bias']
 
-# if(biased):
-    # biased_y = data['biased_y']
-    # biased_ydotdot = data['biased_y_dotdot']
-    # biased_ydot = data['biased_y_dot']
+if(biased):
+    biased_y = data['biased_y']
+    biased_ydotdot = data['biased_y_dotdot']
+    biased_ydot = data['biased_y_dot']
+    biased_labels = data['bias_labels']
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -53,10 +54,10 @@ if(not dot):
     plt.figure(1)
     plt.plot(input,'-', mew=1, ms=8,mec='w')
     plt.plot(ydotdot,'-', mew=1, ms=8,mec='w')
-    plt.plot(ydot,'-', mew=1, ms=8,mec='w')
+    # plt.plot(ydot,'-', mew=1, ms=8,mec='w')
     plt.plot(y,'-', mew=1, ms=8,mec='w')
-    # plt.plot(bias,'-', mew=1, ms=8,mec='w')
-    plt.legend(['$input$','$\ddot y$','$\dot y $','$y$'])
+    plt.plot(bias,'-', mew=1, ms=8,mec='w')
+    plt.legend(['$input$','$\ddot y$','$\dot y $','$y$','bias'])
     plt.grid()
 
 
@@ -69,13 +70,18 @@ else:
     plt.legend(['$input$','$\ddot y$','$\dot y $','$y$'])
     plt.grid()
 
-# if(biased):
-#     plt.figure(2)
-#     plt.plot(y,'-', mew=1, ms=8,mec='w')
-#     plt.plot(biased_y,'-', mew=1, ms=8,mec='w')
-#     plt.plot(bias,'-', mew=1, ms=8,mec='w')
-#     plt.legend(['$y$','$biased y$','biased',])
-#     plt.grid()
+if(biased):
+    plt.figure(2)
+    plt.plot(y,'-', mew=1, ms=8,mec='w')
+    plt.plot(biased_y,'-', mew=1, ms=8,mec='w')
+    plt.plot(bias,'-', mew=1, ms=8,mec='w')
+    plt.plot(input,'.-', mew=1, ms=8,mec='w')
+    plt.legend(['$y$','$biased y$','biased','input'])
+    plt.grid()
+
+    plt.figure(3)
+    plt.plot(biased_labels,'-', mew=1, ms=8,mec='w')
+    plt.grid()
 
 
 

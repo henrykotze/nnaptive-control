@@ -64,9 +64,6 @@ with shelve.open( model_readme) as db:
     sim_time = int((db)['t'])
     dt = float((db)['dt'])
     maxInput = float((db)['maxInput'])
-    max_ydotdot = float(db['max_ydotdot'])
-    max_bias_ydotdot = float
-        db['max_bias_ydotdot'] = max_bias_ydotdot
 
 db.close()
 
@@ -122,9 +119,7 @@ if __name__ == '__main__':
     biased_y_hat = np.zeros(total_steps)
     y_hat_dotdot = np.zeros(total_steps)
     biased_y_hat_dotdot = np.zeros(total_steps)
-    
-    offset_pred = np.zeros(total_steps)
-    freq_pred = np.zeros(total_steps)
+    bias_pred = np.zeros(total_steps)
     # control received by nonlinear model
 
 

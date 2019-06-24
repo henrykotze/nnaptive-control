@@ -189,9 +189,9 @@ def biasIdentification(control_input,y,y_ddt,y_biased,y_ddt_biased,nn_input_matr
 
     nn_input = nn_input_matrix[0].reshape((1,500))
 
-    bias = nn_model.predict(nn_input)
+    freq,amp= nn_model.predict(nn_input)
 
-    return [bias,nn_input_matrix]
+    return [freq,offset,amp,nn_input_matrix]
 
 
 
@@ -343,5 +343,3 @@ plt.plot(bias_pred,'-', mew=1, ms=8,mec='w')
 plt.plot(bias,'-', mew=1, ms=8,mec='w')
 plt.grid()
 plt.legend(['bias pred','bias true'])
-
-plt.show()

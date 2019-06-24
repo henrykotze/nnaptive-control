@@ -15,6 +15,7 @@ from keras.callbacks import TensorBoard
 from datetime import datetime
 from wrap_tensorboard import TrainValTensorBoard
 import shelve
+import h5py
 
 
 
@@ -116,7 +117,7 @@ def build_model(dataset):
     # layers.Dropout(0.2),\
     # layers.Dropout(0.4),\
 
-    layers.Dense(1,kernel_regularizer=keras.regularizers.l2(weight_reg))])
+    layers.Dense(2,kernel_regularizer=keras.regularizers.l2(weight_reg))])
     # ])
 
     optimizer = tf.keras.optimizers.Adam(lr=learning_rate)
@@ -161,11 +162,14 @@ def plot_history(history):
 # labels: np.array that contians all labels
 def loadData(dir):
     # in the directory, dir, determine how many *.npz files it contains
-    with open(str(dir),'rb') as filen:
+    with h5py.File(str(dir),'r') as h5f:
         print('==============================================================')
         print('Loading dataset from: ' ,str(dir))
         print('==============================================================\n')
-        features,labels = pickle.load(filen)
+        features = h5f['features'][:]
+        labels = h5f['labels'][:]
+        h5f.close()
+
 
     # each row of `features` corresponds to the same row as `labels`.
 

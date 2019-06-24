@@ -158,7 +158,7 @@ theta = 0*deg2rad
 
 
 bias_data = np.load('./biased_train_data/response-5.npz')
-bias = bias_data['bias']
+bias = bias_data['bias']/2
 
 
 
@@ -236,7 +236,7 @@ if __name__ == '__main__':
     error = np.zeros(total_steps)
     # control received by nonlinear model
 
-    # bias = np.ones(total_steps)*0.8
+    bias = np.ones(total_steps)*0.8
 
 
     # Nonlinear model of the pendulum
@@ -256,8 +256,6 @@ if __name__ == '__main__':
     linear_controller = PIDcontroller(P,I,D,dt=dt)
     linear_controller2 = PIDcontroller(P,I,D,dt=dt)
     linear_controller3 = PIDcontroller(P,I,D,dt=dt)
-
-    bias_step = 0
 
     while t < sim_time-dt/2:
 
@@ -297,19 +295,16 @@ if __name__ == '__main__':
         u_nn[step] = control_input
 
         [bias_nn_output, bias_nn_input_matrix] = biasIdentification(control_input,y_hat[step],y_hat_dotdot[step],biased_y_hat[step],biased_y_hat_dotdot[step],bias_nn_input_matrix,bias_nn_model)
-
         bias_pred[step] = bias_nn_output
 
-
-
-        u_hat[step] = u_nn[step] + bias[step]
+        u_hat[step] = u_nn[step] + bias[step] -bias_pred[step]
 
         pendulums.update_input(control_input)
         biased_pendulums.update_input(u_hat[step])
         uncompensated_pendulums.update_input(control_output2+bias[step])
 
 
-        linearised_model2.update_input(control_output3)
+        linearised_model2.update_input(control_output3+bias[step])
 
         pendulums.step()
         biased_pendulums.step()
@@ -333,7 +328,7 @@ plt.figure(1)
 plt.plot(biased_y_hat,'-', mew=1, ms=8,mec='w')
 plt.plot(y_uncompensated,'-', mew=1, ms=8,mec='w')
 plt.plot(y_lin,'-', mew=1, ms=8,mec='w')
-plt.legend(['compensated $\hat y$','uncompensated $y$','linearised - bias $y$'])
+plt.legend(['compensated $\hat y$','uncompensated $y$','linearised + bias $y$'])
 # plt.legend(['$\hat y$','$y^{*}$','biased $\hat y$','$y uncompensated $','$y_lin$'])
 plt.grid()
 

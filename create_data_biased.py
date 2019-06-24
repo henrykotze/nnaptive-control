@@ -113,18 +113,32 @@ def generateBiasInput(responseDuration,startInput,minInput,maxInput):
     input = np.zeros( (responseDuration,1) )
     timestep = startInput
 
+    labels = np.zeros([responseDuration,3])
+
     while timestep < responseDuration:
-        magInput = (maxInput)*np.random.random()+maxInput # Magnitude Size of Input
         inputDur = int(responseDuration/5*(np.random.random() ) ) # Duration of input
         zeroInputDur = int(responseDuration/5*(np.random.random()) ) # Duration of zero input
+        if(timestep +inputDur+zeroInputDur< responseDuration):
 
+            magInput = (maxInput)*np.random.random()+maxInput # Magnitude Size of Input
+            # magInput = 0.5
+            offset = (0.5--0.5)*np.random.random()-0.5
+            # offset = 0.1
+            freq = (5)*np.random.random()
+            # freq = 5
 
-        input[timestep:timestep+inputDur] = magInput
-        timestep += inputDur
-        input[timestep:timestep+zeroInputDur] = 0
-        timestep += zeroInputDur
+            t = np.arange(timestep,timestep+inputDur)
 
-    return input
+            input[timestep:timestep+inputDur] = np.transpose(np.array([0.5*np.sin(2*np.pi*freq*t/inputDur)])) + offset
+            labels[timestep:timestep+inputDur][:] = [magInput,freq,offset]
+            timestep += inputDur
+            input[timestep:timestep+zeroInputDur] = 0
+            labels[timestep:timestep+zeroInputDur][:] = [0,0,0]
+            timestep += zeroInputDur
+        else:
+            break
+
+    return input,labels
 
 
 
@@ -250,7 +264,7 @@ if __name__ == '__main__':
         biased_response = pendulum(wn,zeta,y=initial*np.pi/180,time_step=dt)
 
         if(biases):
-            bias = generateCombinationInput(timeSteps,inputTime,minInput/10,maxInput/10)
+            [bias,bias_labels] = generateBiasInput(timeSteps,inputTime,minInput/5,maxInput/5)
         else:
             bias = 0
 
@@ -303,7 +317,7 @@ if __name__ == '__main__':
         # Saves response in *.npz file
         # print(system)
         np.savez(filename,input=input,y_=y,y_dot=ydot,y_dotdot=ydotdot,zeta=zeta,wn=wn,system=str(system_info),bias=bias,
-        biased_y=biased_y,biased_y_dot=biased_ydot,biased_y_dotdot=biased_ydotdot)
+        biased_y=biased_y,biased_y_dot=biased_ydot,biased_y_dotdot=biased_ydotdot,bias_labels=bias_labels)
 
         # Change number on filename to correspond to simulation number
         filename = filename.replace(str(numSim),str(numSim+1))

@@ -14,6 +14,7 @@ from single_pendulum import pendulum
 import os
 import pickle
 import shelve
+import h5py
 
 
 parser = argparse.ArgumentParser(\
@@ -75,7 +76,7 @@ if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
     features = np.zeros( (timeSteps*numberSims,5*N_t) )   # +1 is for the input
-    labels = np.zeros( (timeSteps*numberSims,1) )
+    labels = np.zeros( (timeSteps*numberSims,2) )
     max_input = 0
     max_bias_ydotdot = 0
     max_ydotdot = 0
@@ -92,6 +93,7 @@ if __name__ == '__main__':
 
             input = data['input']
             bias = data['bias']
+            bias_labels  = data['bias_labels']
 
             if(np.amax(input) > max_input):
                  max_input = np.amax(input)
@@ -103,7 +105,8 @@ if __name__ == '__main__':
                  max_ydotdot = np.amax(response_y_dotdot)
 
             for step in range( N_t, timeSteps- N_t ):
-                labels[step+timeSteps*numFile,0] = bias[step]
+                labels[step+timeSteps*numFile,0] = bias_labels[step][0]/20
+                labels[step+timeSteps*numFile,1] = bias_labels[step][1]/0.5
 
                 for n in range(0,N_t):
                     features[step+timeSteps*numFile,n] = input[step-n]/maxInput
@@ -128,13 +131,25 @@ if __name__ == '__main__':
     print('max_bias_ydotdot: ', max_bias_ydotdot)
     print('max_ydotdot: ', max_ydotdot)
 
-    with open(dataset_loc + '/'+nameOfDataset,'wb+') as filen:
-
-        print('\n--------------------------------------------------------------')
-        print('Saving features and labels to:', nameOfDataset)
-        print('\n--------------------------------------------------------------')
-
-        pickle.dump([features,labels],filen)
 
 
-    filen.close()
+    with shelve.open( str(dataset_loc + '/'+nameOfDataset+'_readme')) as db:
+        db['max_ydotdot'] = max_ydotdot
+        db['max_bias_ydotdot'] = max_bias_ydotdot
+    db.close()
+
+    h5f = h5py.File(str(dataset_loc + '/'+nameOfDataset),'w')
+    h5f.create_dataset('features', data=features)
+    h5f.create_dataset('labels', data=labels)
+    h5f.close()
+
+    # with open(dataset_loc + '/'+nameOfDataset,'wb+') as filen:
+    #
+    #     print('\n--------------------------------------------------------------')
+    #     print('Saving features and labels to:', nameOfDataset)
+    #     print('\n--------------------------------------------------------------')
+    #
+    #     pickle.dump([features,labels],filen)
+
+
+    # filen.close()
