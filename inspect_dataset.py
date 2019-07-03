@@ -20,10 +20,10 @@ parser = argparse.ArgumentParser(\
 
 
 parser.add_argument('-n', default=3, help='number of pairs to show')
-parser.add_argument('-name', default=3, help='name of dataset')
+parser.add_argument('-path', default=3, help='path to dataset')
 args = parser.parse_args()
 n = int(vars(args)['n'])
-name = str(vars(args)['name'])
+path = str(vars(args)['path'])
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -34,15 +34,12 @@ def loadData(dir):
         print('Loading dataset from: ' ,str(dir))
         print('==============================================================\n')
         features,labels = pickle.load(filen)
-
-
-
     return [features,labels]
 
 
 
 
-dir = './datasets/' + name
+dir = path
 
 
 features,labels = loadData(dir)

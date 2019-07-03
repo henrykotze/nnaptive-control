@@ -41,6 +41,11 @@ parser.add_argument('-noise', default=0, help='use a noise pendulum system')
 parser.add_argument('-randomInput', default=0, help='use a noise pendulum system')
 parser.add_argument('-biases', default=0, help='add biases to the inputs')
 
+parser.add_argument('-bias_freq', default=10, help='max frequency of bias')
+parser.add_argument('-bias_offset', default=0.5, help='offset bias')
+parser.add_argument('-bias_mag', default=1, help='magnitude of bias')
+
+
 
 
 args = parser.parse_args()
@@ -63,6 +68,10 @@ minInput = float(vars(args)['minInput'])
 noise = int(vars(args)['noise'])
 randomInput = int(vars(args)['randomInput'])
 biases = int(vars(args)['biases'])
+
+bias_freq = float(vars(args)['bias_freq'])
+bias_offset = float(vars(args)['bias_offset'])
+bias_mag = float(vars(args)['bias_mag'])
 
 
 
@@ -116,20 +125,18 @@ def generateBiasInput(responseDuration,startInput,minInput,maxInput):
     labels = np.zeros([responseDuration,3])
 
     while timestep < responseDuration:
-        inputDur = int(responseDuration/5*(np.random.random() ) ) # Duration of input
+        inputDur = int(responseDuration/5*(np.random.random() ) ) + 100
         zeroInputDur = int(responseDuration/5*(np.random.random()) ) # Duration of zero input
-        if(timestep +inputDur+zeroInputDur< responseDuration):
 
-            magInput = (maxInput)*np.random.random()+maxInput # Magnitude Size of Input
-            # magInput = 0.5
-            offset = (0.5--0.5)*np.random.random()-0.5
-            # offset = 0.1
-            freq = (5)*np.random.random()
-            # freq = 5
+        if(timestep + inputDur + zeroInputDur < responseDuration):
+
+            magInput = (bias_mag)*np.random.random() + bias_mag # Magnitude Size of Input
+            offset = (bias_offset--bias_offset)*np.random.random()-bias_offset
+            freq = (bias_freq)*np.random.random()
 
             t = np.arange(timestep,timestep+inputDur)
 
-            input[timestep:timestep+inputDur] = np.transpose(np.array([0.5*np.sin(2*np.pi*freq*t/inputDur)])) + offset
+            input[timestep:timestep+inputDur] = np.transpose(np.array([magInput*np.sin(2*np.pi*freq*t/inputDur)])) + offset
             labels[timestep:timestep+inputDur][:] = [magInput,freq,offset]
             timestep += inputDur
             input[timestep:timestep+zeroInputDur] = 0

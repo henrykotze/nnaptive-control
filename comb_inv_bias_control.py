@@ -302,7 +302,7 @@ if __name__ == '__main__':
 
 
 
-        u_hat[step] = u_nn[step] + bias[step]
+        u_hat[step] = u_nn[step] + bias[step-1]
 
         pendulums.update_input(control_input)
         biased_pendulums.update_input(u_hat[step])

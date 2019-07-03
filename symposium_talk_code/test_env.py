@@ -106,7 +106,7 @@ t = 0
 
 
 error = 0
-ref =   40 * deg2rad
+ref =   50 * deg2rad
 
 if __name__ == '__main__':
 
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     error = np.zeros(total_steps)
 
     # Pendulum linearised around unstable inverted position
-    linearised_model = second_order(wn=wn,zeta=zeta,time_step=dt,y=theta,y_wp=wp)
+    linearised_model = second_order(wn=2*wn,zeta=zeta,time_step=dt,y=theta,y_wp=wp)
 
 
     pendulum_conv = pendulum(wn=wn,zeta=zeta,time_step=dt,y=theta,y_wp=wp)
@@ -252,11 +252,13 @@ plt.rc('font', family='serif')
 plt.rc('font', size=12)
 
 plt.figure(1)
-plt.plot(y_star,'-', mew=1, ms=8,mec='w')
-plt.plot(y_hat,'-', mew=1, ms=8,mec='w')
-# plt.plot(y_conv,'-', mew=1, ms=8,mec='w')
+plt.plot(y_star/deg2rad,'-', mew=1, ms=8,mec='w')
+plt.plot(y_hat/deg2rad,'-', mew=1, ms=8,mec='w')
+plt.title('Linear Plant vs Nonlinear Plant')
+plt.ylabel('Degrees')
+plt.xlabel('Time [ms]')
 plt.grid()
-plt.legend(['$y^{*}$','$\hat y$'])
+plt.legend(['$y^{*}$: Linear Plant','$\hat y$: Nonlinear Plant'])
 
 plt.figure(2)
 plt.plot(e,'-', mew=1, ms=8,mec='w')
@@ -270,11 +272,12 @@ plt.title('Error signal')
 
 
 plt.figure(4)
-plt.plot(u_nn,'-', mew=1, ms=8,mec='w')
+# plt.plot(u_nn,'-', mew=1, ms=8,mec='w')
 plt.plot(u_star,'-', mew=1, ms=8,mec='w')
 plt.plot(u_hat,'-', mew=1, ms=8,mec='w')
+plt.title('Control Signal of Linear Controller and Neural Network')
 plt.grid()
-plt.legend(['$u_{NN}$','$u^{*}$','$\hat u$'])
+plt.legend(['Linear Controller: $u^{*}$','Neural Network: $\hat u$'])
 
 
 plt.figure(5)
