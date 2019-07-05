@@ -117,12 +117,13 @@ def build_model(dataset):
     # layers.Dropout(0.2),\
     # layers.Dropout(0.4),\
 
-    layers.Dense(2,kernel_regularizer=keras.regularizers.l2(weight_reg))])
+    layers.Dense(10,kernel_regularizer=keras.regularizers.l2(weight_reg)),
+    layers.Softmax()])
     # ])
 
     optimizer = tf.keras.optimizers.Adam(lr=learning_rate)
 
-    model.compile(loss='mean_squared_error',    \
+    model.compile(loss='categorical_crossentropy',    \
                     optimizer=optimizer,        \
                     metrics=['mean_absolute_error', 'mean_squared_error', 'accuracy' ])
 
@@ -220,7 +221,7 @@ if __name__ == '__main__':
 
     # Callback for Checkpoint
     cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
-                                                 monitor='val_loss',
+                                                 monitor='val_acc',
                                                  period=1,
                                                  save_best_only=True,
                                                  verbose=1)

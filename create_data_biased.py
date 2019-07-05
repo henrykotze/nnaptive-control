@@ -69,7 +69,7 @@ noise = int(vars(args)['noise'])
 randomInput = int(vars(args)['randomInput'])
 biases = int(vars(args)['biases'])
 
-bias_freq = float(vars(args)['bias_freq'])
+bias_freq = int(vars(args)['bias_freq'])
 bias_offset = float(vars(args)['bias_offset'])
 bias_mag = float(vars(args)['bias_mag'])
 
@@ -122,25 +122,31 @@ def generateBiasInput(responseDuration,startInput,minInput,maxInput):
     input = np.zeros( (responseDuration,1) )
     timestep = startInput
 
-    labels = np.zeros([responseDuration,3])
+    labels = np.zeros([responseDuration,bias_freq])
 
     while timestep < responseDuration:
         inputDur = int(responseDuration/5*(np.random.random() ) ) + 100
         zeroInputDur = int(responseDuration/5*(np.random.random()) ) # Duration of zero input
 
+        zero_input = np.zeros([1,bias_freq])
+        zero_input[0,0] = 1
+
         if(timestep + inputDur + zeroInputDur < responseDuration):
 
             magInput = (bias_mag)*np.random.random() + bias_mag # Magnitude Size of Input
             offset = (bias_offset--bias_offset)*np.random.random()-bias_offset
-            freq = (bias_freq)*np.random.random()
+
+            freq =  np.random.randint(0,bias_freq)
+            freq_content = np.zeros([1,bias_freq])
+            freq_content[0,freq] = 1
 
             t = np.arange(timestep,timestep+inputDur)
 
             input[timestep:timestep+inputDur] = np.transpose(np.array([magInput*np.sin(2*np.pi*freq*t/inputDur)])) + offset
-            labels[timestep:timestep+inputDur][:] = [magInput,freq,offset]
+            labels[timestep:timestep+inputDur][:] = freq_content
             timestep += inputDur
             input[timestep:timestep+zeroInputDur] = 0
-            labels[timestep:timestep+zeroInputDur][:] = [0,0,0]
+            labels[timestep:timestep+zeroInputDur][:] = zero_input
             timestep += zeroInputDur
         else:
             break

@@ -47,7 +47,7 @@ with shelve.open( str(dir+'/readme')) as db:
     filename = db['filename']
     bias_activated = int(db['biases'])
     maxInput = float(db['maxInput'])
-    bias_freq = float(db['bias_freq'])
+    bias_freq = int(db['bias_freq'])
     bias_offset = float(db['bias_offset'])
     bias_mag = float(db['bias_mag'])
 db.close()
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # Pre-creating correct sizes of arrays
     features = np.zeros( (timeSteps*numberSims,5*N_t) )   # +1 is for the input
-    labels = np.zeros( (timeSteps*numberSims,3) )
+    labels = np.zeros( (timeSteps*numberSims,bias_freq) )
     max_input = 0
     max_bias_ydotdot = 0
     max_ydotdot = 0
@@ -108,9 +108,11 @@ if __name__ == '__main__':
                  max_ydotdot = np.amax(response_y_dotdot)
 
             for step in range( N_t, timeSteps- N_t ):
-                labels[step+timeSteps*numFile,0] = bias_labels[step][0]/bias_mag
-                labels[step+timeSteps*numFile,1] = bias_labels[step][1]/bias_freq
-                labels[step+timeSteps*numFile,2] = bias_labels[step][2]/bias_offset
+                # labels[step+timeSteps*numFile,0] = bias_labels[step][0]/bias_mag
+                # labels[step+timeSteps*numFile,1] = bias_labels[step][1]/bias_freq
+                # labels[step+timeSteps*numFile,2] = bias_labels[step][2]/bias_offset
+                labels[step+timeSteps*numFile,:] = bias_labels[step]
+                # print(bias_labels[step])
 
                 for n in range(0,N_t):
                     features[step+timeSteps*numFile,n] = input[step-n]/maxInput

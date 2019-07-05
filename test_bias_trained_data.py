@@ -65,8 +65,10 @@ with shelve.open( model_readme) as db:
     dt = float((db)['dt'])
     maxInput = float((db)['maxInput'])
     max_ydotdot = float(db['max_ydotdot'])
-    max_bias_ydotdot = float
-        db['max_bias_ydotdot'] = max_bias_ydotdot
+    max_bias_ydotdot =  float(db['max_bias_ydotdot'])
+    bias_freq = float(db['bias_freq'])
+    Nt = int(db['Nt'])
+
 
 db.close()
 
@@ -90,11 +92,12 @@ print('-------------------------------------------------------------------------
 
 nn_model = keras.models.load_model(str(model_path))
 
-inputsize = nn_model.get_input_shape_at(0)
+inputsize = nn_model.get_input_shape_at(0)[1]
+# print(inputsize)
 
 # input to neural network
-N=500
-nn_input_matrix = np.zeros((1,N))
+# N=500
+nn_input_matrix = np.zeros((1,inputsize))
 
 # Conversion to radians
 deg2rad = np.pi/180
@@ -106,6 +109,10 @@ theta = 0*deg2rad
 data = np.load('./biased_train_data/response-10.npz')
 bias = data['bias']
 input = data['input']
+bias_labels= data['bias_labels']
+# print(bias_labels)
+
+true_freq = bias_labels[:,1]
 
 if __name__ == '__main__':
 
@@ -122,9 +129,10 @@ if __name__ == '__main__':
     biased_y_hat = np.zeros(total_steps)
     y_hat_dotdot = np.zeros(total_steps)
     biased_y_hat_dotdot = np.zeros(total_steps)
-    
+
     offset_pred = np.zeros(total_steps)
     freq_pred = np.zeros(total_steps)
+    bias_pred = np.zeros(total_steps)
     # control received by nonlinear model
 
 
@@ -153,19 +161,19 @@ if __name__ == '__main__':
         nn_input_matrix = np.roll(nn_input_matrix,1) # move elements one timestep back
 
         # insert new timestep
-        nn_input_matrix[0,0] = input[step]/8
-        nn_input_matrix[0,100] = np.sin(y_hat[step])
-        nn_input_matrix[0,200] = np.sin(biased_y_hat[step])
-        nn_input_matrix[0,300] =  y_hat_dotdot[step]/6.017502740394413
-        nn_input_matrix[0,400] = biased_y_hat_dotdot[step]/6.156157104064169
+        nn_input_matrix[0,0] = input[step]/maxInput
+        nn_input_matrix[0,Nt] = np.sin(y_hat[step])
+        nn_input_matrix[0,2*Nt] = np.sin(biased_y_hat[step])
+        nn_input_matrix[0,3*Nt] =  y_hat_dotdot[step]/max_ydotdot
+        nn_input_matrix[0,4*Nt] = biased_y_hat_dotdot[step]/max_bias_ydotdot
 
         # reshape
         # print(nn_input_matrix)
-        nn_input = nn_input_matrix[0].reshape((1,500))
+        nn_input = nn_input_matrix[0].reshape((1,Nt*5))
 
         nn_output = nn_model.predict(nn_input)
 
-        bias_pred[step] = nn_output
+        bias_pred[step] = nn_output*bias_freq
 
         pendulums.update_input(input[step])
         biased_pendulums.update_input(input[step] + bias[step])
@@ -192,7 +200,7 @@ plt.grid()
 
 plt.figure(2)
 plt.plot(bias_pred,'-', mew=1, ms=8,mec='w')
-plt.plot(bias,'-', mew=1, ms=8,mec='w')
+plt.plot(true_freq,'-', mew=1, ms=8,mec='w')
 plt.grid()
 plt.legend(['bias pred','bias true'])
 
