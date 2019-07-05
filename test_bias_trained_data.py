@@ -66,7 +66,7 @@ with shelve.open( model_readme) as db:
     maxInput = float((db)['maxInput'])
     max_ydotdot = float(db['max_ydotdot'])
     max_bias_ydotdot =  float(db['max_bias_ydotdot'])
-    bias_freq = float(db['bias_freq'])
+    bias_freq = int(db['bias_freq'])
     Nt = int(db['Nt'])
 
 
@@ -106,13 +106,15 @@ wp = wp*deg2rad
 theta = 0*deg2rad
 
 
-data = np.load('./biased_train_data/response-10.npz')
+data = np.load('./biased_train_data/response-0.npz')
 bias = data['bias']
 input = data['input']
 bias_labels= data['bias_labels']
+
+transform = np.arange(0,bias_freq)
 # print(bias_labels)
 
-true_freq = bias_labels[:,1]
+true_freq = bias_labels[:,:]*transform
 
 if __name__ == '__main__':
 
@@ -131,7 +133,7 @@ if __name__ == '__main__':
     biased_y_hat_dotdot = np.zeros(total_steps)
 
     offset_pred = np.zeros(total_steps)
-    freq_pred = np.zeros(total_steps)
+    freq_pred = np.zeros([total_steps,bias_freq])
     bias_pred = np.zeros(total_steps)
     # control received by nonlinear model
 
@@ -173,7 +175,7 @@ if __name__ == '__main__':
 
         nn_output = nn_model.predict(nn_input)
 
-        bias_pred[step] = nn_output*bias_freq
+        bias_pred[step] = np.amax(nn_output*transform)
 
         pendulums.update_input(input[step])
         biased_pendulums.update_input(input[step] + bias[step])

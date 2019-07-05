@@ -128,8 +128,8 @@ def generateBiasInput(responseDuration,startInput,minInput,maxInput):
         inputDur = int(responseDuration/5*(np.random.random() ) ) + 100
         zeroInputDur = int(responseDuration/5*(np.random.random()) ) # Duration of zero input
 
-        zero_input = np.zeros([1,bias_freq])
-        zero_input[0,0] = 1
+        # zero_input = np.zeros([1,bias_freq])
+        # zero_input[0,0] = 1
 
         if(timestep + inputDur + zeroInputDur < responseDuration):
 
@@ -146,7 +146,7 @@ def generateBiasInput(responseDuration,startInput,minInput,maxInput):
             labels[timestep:timestep+inputDur][:] = freq_content
             timestep += inputDur
             input[timestep:timestep+zeroInputDur] = 0
-            labels[timestep:timestep+zeroInputDur][:] = zero_input
+            labels[timestep:timestep+zeroInputDur][:] = np.zeros([1,bias_freq])
             timestep += zeroInputDur
         else:
             break
